@@ -1,0 +1,1 @@
+ffmpeg -i C:\Users\programmer\Desktop\ffmpeg_tests\sample-15s.mp4 -force_key_frames "expr:gte(t,n_forced*1)" -c:v libx264 -preset fast -c:a aac -f segment -segment_time 2 -reset_timestamps 1 C:\Users\programmer\Desktop\ffmpeg_tests\output_%%03d.mp4
