@@ -132,13 +132,10 @@ public class FileStorage implements Storage {
 
     @Override
     public InputStream download(String name) {
-        // TODO Auto-generated method stub
-        // throw new UnsupportedOperationException("Unimplemented method 'download'");
         // First, let's locate all files in our glorious directory:
         File startPath = new File("C://SsypYoutubeBaisicStorage");
         File[] AllFiles = startPath.listFiles();
         File FoundFile = null;
-        // I am a useless piece of meat:
         for (int i = 0; i < AllFiles.length; i++){
             String CurrentName = AllFiles[i].getName();
             CurrentName = CurrentName.substring(0, CurrentName.length() - 9);
