@@ -2,6 +2,7 @@ package ru.ssyp.youtube;
 
 import java.io.File;
 import java.net.Socket;
+import java.io.InputStream;
 
 public class ServerYoutube implements Youtube {
 
@@ -12,7 +13,7 @@ public class ServerYoutube implements Youtube {
     }
 
     @Override
-    public void upload(User user, String name, File file) {
+    public void upload(User user, String title, String description, String name, InputStream stream) {
         // todo: Релизовать метод сохранения файла в хранилище.
         //       Сервер должен слушать порт 8080 и принимать входящие подключения
         //       Получив команду на сохранение файла, сервер должен получить файл
@@ -24,8 +25,8 @@ public class ServerYoutube implements Youtube {
     }
 
     @Override
-    public File load(User user, String name) {
-        this.socket;
+    public InputStream load(User user, String name) {
+//            this.socket;
         // TODO Очень похож на клиентский upload.
         throw new UnsupportedOperationException("Unimplemented method 'load'");
     }

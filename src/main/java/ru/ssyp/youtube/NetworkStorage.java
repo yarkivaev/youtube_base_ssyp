@@ -48,13 +48,13 @@ public class NetworkStorage implements Storage {
         }
     }
     @Override
-    public void upload(String name, File file) {
+    public void upload(String name, InputStream file) {
 
     }
 
     @Override
-    public File download(String name) throws IOException {
+    public InputStream download(String name) throws IOException {
         File myObj = new File(name);
-        return myObj;
+        return new FileInputStream(myObj);
     }
 }

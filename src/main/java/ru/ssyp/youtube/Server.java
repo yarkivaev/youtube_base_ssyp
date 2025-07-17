@@ -1,4 +1,5 @@
 package ru.ssyp.youtube;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
@@ -31,14 +32,12 @@ public class Server {
             String username = "";
             do {
                 clientSocketStream.read(bcnt);
-            } while(true) {
-
-            };
-            if (cnt == 0) {
-                serverYoutube.upload(new User(username), name, clientSocketStream);
-            } else {
-                serverYoutube.load(new User(username), name);
-            }
+            } while(true);
+//            if (cnt == 0) {
+//                serverYoutube.upload(new User(username), "title", "decription", name, clientSocketStream);
+//            } else {
+//                serverYoutube.load(new User(username), name);
+//            }
         } catch (IOException e) {
             e.printStackTrace();
         }
