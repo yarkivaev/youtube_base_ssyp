@@ -2,13 +2,24 @@ package ru.ssyp.youtube;
 
 public interface Users {
     /** 
-     * Add new user.
+     * Register new user.
      *
      * @param name Name is unique.
-     * @param password
-     * @return
+     * @return token
      */
-    User addUser(String name, String password);
+    String addUser(String name, String password);
 
-    User login(String name, String password);
+    /**
+     * Log in as existing user.
+     *
+     * @param name Name is unique.
+     * @return token
+     */
+    String login(String name, String password);
+
+    /**
+     * Get user info by token.
+     * @return User or null if token is invalid.
+     */
+    User getUser(String token);
 }

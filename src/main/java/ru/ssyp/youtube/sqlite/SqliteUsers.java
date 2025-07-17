@@ -3,12 +3,19 @@ package ru.ssyp.youtube.sqlite;
 import ru.ssyp.youtube.User;
 import ru.ssyp.youtube.Users;
 
+import java.security.SecureRandom;
 import java.sql.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SqliteUsers implements Users {
-    public static final Connection conn;
+    private final Map<String, User> sessions;
+    private final Connection conn;
 
-    static {
+    public SqliteUsers() {
+        sessions = new HashMap<>();
+
         try {
             conn = DriverManager.getConnection("jdbc:sqlite:users.db");
 
@@ -24,8 +31,16 @@ public class SqliteUsers implements Users {
         return password;
     }
 
+    private String genToken() {
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[20];
+        random.nextBytes(bytes);
+        Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
+        return encoder.encodeToString(bytes);
+    }
+
     @Override
-    public User addUser(String name, String password) {
+    public String addUser(String name, String password) {
         // TODO: validate name
 
         try {
@@ -37,11 +52,13 @@ public class SqliteUsers implements Users {
             throw new RuntimeException(e);
         }
 
-        return new SqliteUser(name);
+        String token = genToken();
+        sessions.put(token, new SqliteUser(name, token));
+        return token;
     }
 
     @Override
-    public User login(String name, String password) {
+    public String login(String name, String password) {
         try {
             PreparedStatement statement = conn.prepareStatement("SELECT * FROM user WHERE name = ? AND passhash = ?;");
             statement.setString(1, name);
@@ -55,6 +72,13 @@ public class SqliteUsers implements Users {
             throw new RuntimeException(e);
         }
 
-        return new SqliteUser(name);
+        String token = genToken();
+        sessions.put(token, new SqliteUser(name, token));
+        return token;
+    }
+
+    @Override
+    public User getUser(String token) {
+        return sessions.get(token);
     }
 }
