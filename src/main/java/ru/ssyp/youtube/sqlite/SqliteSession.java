@@ -1,18 +1,18 @@
 package ru.ssyp.youtube.sqlite;
 
-import ru.ssyp.youtube.User;
+import ru.ssyp.youtube.Session;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class SqliteUser implements User {
+public class SqliteSession implements Session {
     private final Connection conn;
     private final int id;
     private final String token;
 
-    public SqliteUser(Connection conn, int id, String token) {
+    public SqliteSession(Connection conn, int id, String token) {
         this.conn = conn;
         this.id = id;
         this.token = token;

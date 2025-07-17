@@ -3,7 +3,7 @@ package ru.ssyp.youtube;
 /**
  * Represents a session, so one account can have multiple at once.
  */
-public interface User {
+public interface Session {
     int id();
 
     String username();

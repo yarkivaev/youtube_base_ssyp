@@ -1,7 +1,7 @@
 package ru.ssyp.youtube.sqlite;
 
 import ru.ssyp.youtube.PasswordHasher;
-import ru.ssyp.youtube.User;
+import ru.ssyp.youtube.Session;
 import ru.ssyp.youtube.Users;
 
 import java.security.SecureRandom;
@@ -87,7 +87,7 @@ public class SqliteUsers implements Users {
     }
 
     @Override
-    public User getUser(String token) {
+    public Session getSession(String token) {
         try {
             PreparedStatement statement = conn.prepareStatement("SELECT user FROM sessions WHERE token = ?;");
             statement.setString(1, token);
@@ -98,7 +98,7 @@ public class SqliteUsers implements Users {
             }
 
             int userid = rs.getInt("user");
-            return new SqliteUser(conn, userid, token);
+            return new SqliteSession(conn, userid, token);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

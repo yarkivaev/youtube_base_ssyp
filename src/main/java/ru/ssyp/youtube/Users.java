@@ -18,8 +18,8 @@ public interface Users {
     String login(String name, String password);
 
     /**
-     * Get user info by token.
-     * @return User or null if token is invalid.
+     * Get session info by token.
+     * @return Session or null if token is invalid.
      */
-    User getUser(String token);
+    Session getSession(String token);
 }
