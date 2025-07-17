@@ -22,7 +22,7 @@ public class FileStorage implements Storage {
             throw new RuntimeException(e);
         }
         if (length > 4096){
-            throw new UnsupportedOperationException("Too heavy file");
+            throw new UnsupportedOperationException("Error: too heavy file");
         }
         byte[] buffer = new byte[length];
         for(int i = 0; i < length; i++){
@@ -33,7 +33,7 @@ public class FileStorage implements Storage {
                 throw new RuntimeException(e);
             }
             if(test == -1){
-                throw new RuntimeException("Oh man, some sketchy business!");
+                throw new RuntimeException("Error: Unable to read from the input stream");
             }
             buffer[i] = (byte) test;
         }
@@ -41,7 +41,7 @@ public class FileStorage implements Storage {
         try {
             md = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Oh man, hashy thingy refuses to work");
+            throw new RuntimeException("Error: unable to generate SHA-256 hash");
         }
         byte[] result = md.digest(buffer);
         String signature = Base64.getEncoder().encodeToString(result);
@@ -54,7 +54,7 @@ public class FileStorage implements Storage {
                 // System.out.println("File has been created");
             }
             else{
-                throw new RuntimeException("Oh man, fily thingy wasn't created!");
+                throw new RuntimeException("Error: unable to create a file");
             }
         }
         catch(IOException ex){
@@ -66,7 +66,66 @@ public class FileStorage implements Storage {
             // System.out.println("Data successfully written to the file.");
         }
         catch (IOException e) {
-            System.out.println("An error occurred: " + e.getMessage());
+            System.out.println(STR."An error occurred: \{e.getMessage()}");
+        }
+        return;
+    }
+    public void upload(String name, InputStream stream, String SHA256hash) throws FileNotFoundException {
+        int length = 0;
+        try {
+            length = stream.available();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if (length > 4096){
+            throw new UnsupportedOperationException("Error: too heavy file");
+        }
+        byte[] buffer = new byte[length];
+        for(int i = 0; i < length; i++){
+            int test = -1;
+            try {
+                test = stream.read();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            if(test == -1){
+                throw new RuntimeException("Error: Unable to read from the input stream");
+            }
+            buffer[i] = (byte) test;
+        }
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Error: unable to generate SHA-256 hash");
+        }
+        byte[] result = md.digest(buffer);
+        String signature = Base64.getEncoder().encodeToString(result);
+        if (signature != SHA256hash){
+            throw new RuntimeException("Error during file transfer: SHA-256 hash mismatch");
+        }
+
+        File newFile = new File("C://SsypYoutubeBaisicStorage//" + name + signature.substring(0, 5) + ".txt");
+        try
+        {
+            boolean created = newFile.createNewFile();
+            if(created){
+                System.out.println("File has been created");
+            }
+            else{
+                throw new RuntimeException("Error: unable to create a file");
+            }
+        }
+        catch(IOException ex){
+            System.out.println(ex.getMessage());
+        }
+        try (FileOutputStream fos = new FileOutputStream(newFile)) {
+            // Write the bytes to the file
+            fos.write(buffer);
+            // System.out.println("Data successfully written to the file.");
+        }
+        catch (IOException e) {
+            System.out.println(STR."An error occurred: \{e.getMessage()}");
         }
         return;
     }
@@ -93,7 +152,7 @@ public class FileStorage implements Storage {
             try {
                 return new FileInputStream(FoundFile);
             } catch (FileNotFoundException e) {
-                System.out.println("No luck today :(");
+                System.out.println("File not found :(");
             }
         }
         return null;
