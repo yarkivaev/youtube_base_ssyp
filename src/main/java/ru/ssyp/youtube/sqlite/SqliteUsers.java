@@ -1,23 +1,18 @@
 package ru.ssyp.youtube.sqlite;
 
+import ru.ssyp.youtube.PasswordHasher;
 import ru.ssyp.youtube.User;
 import ru.ssyp.youtube.Users;
 
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 import java.sql.*;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public class SqliteUsers implements Users {
     private final Map<String, User> sessions;
+    private final PasswordHasher hasher = new PasswordHasher();
     private final Connection conn;
 
     public SqliteUsers() {
@@ -31,36 +26,6 @@ public class SqliteUsers implements Users {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private byte[] pbkdf2(String password, byte[] salt) {
-        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 128);
-
-        try {
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            return factory.generateSecret(spec).getEncoded();
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String hashPassword(String password) {
-        SecureRandom random = new SecureRandom();
-        byte[] salt = new byte[16];
-        random.nextBytes(salt);
-
-        Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
-        return encoder.encodeToString(salt) + "$" + encoder.encodeToString(pbkdf2(password, salt));
-    }
-
-    private boolean checkPassword(String hash, String password) {
-        Base64.Decoder decoder = Base64.getUrlDecoder();
-        String[] parts = hash.split(Pattern.quote("$"), 1);
-
-        byte[] salt = decoder.decode(parts[0]);
-        byte[] hashBytes = decoder.decode(parts[1]);
-
-        return Arrays.equals(pbkdf2(password, salt), hashBytes);
     }
 
     private String genToken() {
@@ -79,7 +44,7 @@ public class SqliteUsers implements Users {
         try {
             PreparedStatement statement = conn.prepareStatement("INSERT INTO user (name, passhash) VALUES (?, ?);");
             statement.setString(1, name);
-            statement.setString(2, hashPassword(password));
+            statement.setString(2, hasher.hashPassword(password));
             statement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -102,7 +67,7 @@ public class SqliteUsers implements Users {
             }
 
             String hash = rs.getString("passhash");
-            if (!checkPassword(hash, password)) {
+            if (!hasher.checkPassword(hash, password)) {
                 return null;
             }
         } catch (SQLException e) {
