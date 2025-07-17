@@ -1,8 +1,15 @@
 package ru.ssyp.youtube;
 
 import java.io.File;
+import java.net.Socket;
 
 public class ServerYoutube implements Youtube {
+
+    private final Socket socket;
+
+    public ServerYoutube(Socket socket) {
+        this.socket = socket;
+    }
 
     @Override
     public void upload(User user, String name, File file) {
@@ -18,6 +25,7 @@ public class ServerYoutube implements Youtube {
 
     @Override
     public File load(User user, String name) {
+        this.socket;
         // TODO Очень похож на клиентский upload.
         throw new UnsupportedOperationException("Unimplemented method 'load'");
     }

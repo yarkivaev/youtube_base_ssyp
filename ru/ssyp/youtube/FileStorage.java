@@ -11,7 +11,7 @@ public class FileStorage implements Storage {
     }
 
     @Override
-    public void download(String name) {
+    public File download(String name) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'download'");
     }

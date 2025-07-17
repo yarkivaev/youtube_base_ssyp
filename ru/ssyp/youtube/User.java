@@ -1,5 +1,10 @@
 package ru.ssyp.youtube;
 
-public interface User {
-    String uniqueName();
+public class User {
+    public final String uniqueName;
+
+
+    public User(String uniqueName) {
+        this.uniqueName = uniqueName;
+    }
 }

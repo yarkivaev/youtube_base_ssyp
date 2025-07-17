@@ -1,4 +1,7 @@
 package ru.ssyp.youtube;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 public class Server {
     
@@ -11,11 +14,33 @@ public class Server {
         this.serverYoutube = serverYoutube;
     }
     public void serve() {
-        /**
-         * todo Читаем в цикле данные, которые нам шлёт клиент. Клиент отправляет команды.
-         * После каждой команды клиент отправляет флаг, о том, что команда отправленна.
-         * Когда сервер видит флаг, он начинает парсить команду. Если парсинг успешный - вызывает
-         * соответствующий метод интерфейса ServerYoutube
-         */
+        try (ServerSocket serverSocket = new ServerSocket(8080)) {
+            Socket clientSocket = serverSocket.accept();
+//                new ClientHandler(clientSocket).start();
+            byte[] bcnt = new byte[1];
+            InputStream clientSocketStream = clientSocket.getInputStream();
+            clientSocketStream.read(bcnt);
+            int cnt;
+            if (bcnt[0]==(byte)0x0) {
+                cnt = 0;
+            } else {
+                cnt = 1;
+            }
+            int i = 0;
+            String name = "";
+            String username = "";
+            do {
+                clientSocketStream.read(bcnt);
+            } while(true) {
+
+            };
+            if (cnt == 0) {
+                serverYoutube.upload(new User(username), name, clientSocketStream);
+            } else {
+                serverYoutube.load(new User(username), name);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
