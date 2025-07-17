@@ -6,5 +6,8 @@ import java.io.InputStream;
 public interface Youtube {
     void upload(User user, String name, InputStream stream);
 
-    InputStream load(User user, String name);
+    /*
+     * Отправляет поток данных видео, начиная с startSec секунды
+     */
+    InputStream load(User user, String name, Double startSec);
 }
