@@ -2,18 +2,42 @@ package ru.ssyp.youtube.sqlite;
 
 import ru.ssyp.youtube.User;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 public class SqliteUser implements User {
-    private final String username;
+    private final Connection conn;
+    private final int id;
     private final String token;
 
-    public SqliteUser(String username, String token) {
-        this.username = username;
+    public SqliteUser(Connection conn, int id, String token) {
+        this.conn = conn;
+        this.id = id;
         this.token = token;
     }
 
     @Override
+    public int id() {
+        return id;
+    }
+
+    @Override
     public String username() {
-        return username;
+        try {
+            PreparedStatement statement = conn.prepareStatement("SELECT name FROM users WHERE id = ?;");
+            statement.setInt(1, id);
+            ResultSet rs = statement.executeQuery();
+
+            if (!rs.next()) {
+                throw new RuntimeException("session has invalid user id");
+            }
+
+            return rs.getString("name");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

@@ -7,25 +7,19 @@ import ru.ssyp.youtube.Users;
 import java.security.SecureRandom;
 import java.sql.*;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
 public class SqliteUsers implements Users {
-    private final Map<String, User> sessions;
     private final PasswordHasher hasher = new PasswordHasher();
     private final Connection conn;
 
-    public SqliteUsers() {
-        sessions = new HashMap<>();
+    public SqliteUsers(Connection conn) {
+        this.conn = conn;
+    }
 
-        try {
-            conn = DriverManager.getConnection("jdbc:sqlite:users.db");
-
-            Statement statement = conn.createStatement();
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS user (id INTEGER, name STRING, passhash STRING);");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    public void initDatabase() throws SQLException {
+        Statement statement = conn.createStatement();
+        statement.executeUpdate("CREATE TABLE users (id INTEGER PRIMARY KEY, name STRING NOT NULL, passhash STRING NOT NULL);");
+        statement.executeUpdate("CREATE TABLE sessions (id INTEGER PRIMARY KEY, token STRING NOT NULL, user INTEGER NOT NULL, FOREIGN KEY (user) REFERENCES users (id));");
     }
 
     private String genToken() {
@@ -37,12 +31,27 @@ public class SqliteUsers implements Users {
         return encoder.encodeToString(bytes);
     }
 
+    private String addSession(int userid) {
+        String token = genToken();
+
+        try {
+            PreparedStatement statement = conn.prepareStatement("INSERT INTO sessions (token, user) VALUES (?, ?);");
+            statement.setString(1, token);
+            statement.setInt(2, userid);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return token;
+    }
+
     @Override
     public String addUser(String name, String password) {
         // TODO: validate name
 
         try {
-            PreparedStatement statement = conn.prepareStatement("INSERT INTO user (name, passhash) VALUES (?, ?);");
+            PreparedStatement statement = conn.prepareStatement("INSERT INTO users (name, passhash) VALUES (?, ?);");
             statement.setString(1, name);
             statement.setString(2, hasher.hashPassword(password));
             statement.executeUpdate();
@@ -50,15 +59,13 @@ public class SqliteUsers implements Users {
             throw new RuntimeException(e);
         }
 
-        String token = genToken();
-        sessions.put(token, new SqliteUser(name, token));
-        return token;
+        return login(name, password);
     }
 
     @Override
     public String login(String name, String password) {
         try {
-            PreparedStatement statement = conn.prepareStatement("SELECT passhash FROM user WHERE name = ?;");
+            PreparedStatement statement = conn.prepareStatement("SELECT id, passhash FROM users WHERE name = ?;");
             statement.setString(1, name);
             ResultSet rs = statement.executeQuery();
 
@@ -66,21 +73,34 @@ public class SqliteUsers implements Users {
                 return null;
             }
 
+            int id = rs.getInt("id");
             String hash = rs.getString("passhash");
+
             if (!hasher.checkPassword(hash, password)) {
                 return null;
             }
+
+            return addSession(id);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-        String token = genToken();
-        sessions.put(token, new SqliteUser(name, token));
-        return token;
     }
 
     @Override
     public User getUser(String token) {
-        return sessions.get(token);
+        try {
+            PreparedStatement statement = conn.prepareStatement("SELECT user FROM sessions WHERE token = ?;");
+            statement.setString(1, token);
+            ResultSet rs = statement.executeQuery();
+
+            if (!rs.next()) {
+                return null;
+            }
+
+            int userid = rs.getInt("user");
+            return new SqliteUser(conn, userid, token);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
