@@ -1,112 +1,84 @@
 package ru.ssyp.youtube;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.io.TempDir;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.params.shadow.com.univocity.parsers.conversions.Conversions.string;
-
 import java.io.*;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
+import java.util.Base64;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /*
-* This file contains tests for FileStorage class
-* The last commit passes all of them
-*/
+    Abandon all hope ye, who import this package.
 
-class FileStorageTest {
+    I tried to add some comments.
+ */
 
-    // I mean, the names of the tests are pretty self-explanatory
-    
-    private FileStorage fileStorage;
-    
-    @BeforeEach
-    void setUp() {
-        String tmpDir = "C://SsypYoutubeBaisicStorage//";
-        fileStorage = new FileStorage(tmpDir, 128); //Setting very low max file size for testing purposes
-        File directory = new File(tmpDir);
-        for (File file : Objects.requireNonNull(directory.listFiles())) {
-            if (!file.isDirectory()) {
-                file.delete();
+public class FileStorage implements Storage {
+    // Declaring three parameters of a file storage instance. Two constructors can be used:
+    final Path dir;
+    int chunkSize; // Maximum size of an accepted file
+    //Creating a file storage and adjusting all the parameters
+    public FileStorage(Path dir, int chunkSize){
+        this.dir = dir;
+        this.chunkSize = chunkSize;
+    }
+    public FileStorage(Path dir){
+        this(dir, 32768);
+    }
+    public FileStorage(){
+        this(makeDefaultDir());
+    }
+    private static Path makeDefaultDir(){
+        File dire = new File("SsypYoutubeBaisicStorage");
+        if (!dire.exists()){
+            if (!dire.mkdir()) {
+                throw new RuntimeException("Error: failed to create a directory");
+            } else {
+                System.out.println("Created.");
             }
         }
-    }
-    
-    @Test
-    void testUploadDownload() throws IOException {
-        fileStorage.upload("FileRandom.bin", new ByteArrayInputStream( "Hello!".getBytes()));
-        InputStream io = fileStorage.download("FileRandom.bin");
-        String read = "Read: ";
-        while(io.available() != -1){
-            int attemptAtRead = io.read();
-            if (attemptAtRead != -1) {
-                read += (char) attemptAtRead;
-                System.out.println(attemptAtRead + " ");
-            }
-            else{
-                break;
+        else{
+            if(!dire.isDirectory()){
+                throw new RuntimeException("Error: path exists and is not a directory");
             }
         }
-        System.out.print(read);
-        assertEquals("Read: Hello!", read);
-    }
-    
-    @Test
-    void testDownloadThrowsUnsupportedOperationException() {
-        assertThrows(UnsupportedOperationException.class, () -> {
-            fileStorage.download("testFile");
-        });
-    }
-    
-    @Test
-    void testStorageImplementsInterface() {
-        assertTrue(fileStorage instanceof Storage);
-    }
 
-    @Test
-    void testMaxFileSize(){
-        assertThrows(UnsupportedOperationException.class, () -> {
-            fileStorage.upload("FileHeavy.bin", new ByteArrayInputStream( "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris efficitur aliquam leo, quis scelerisque enim semper in. Duis eleifend porta sapien sed sagittis. Quisque lacinia nisi sagittis neque vehicula, vitae molestie odio egestas. Sed pulvinar aenean".getBytes()));
-        });
+        return FileSystems.getDefault().getPath("SsypYoutubeBaisicStorage");
     }
+    //Upload function: loads the file INTO the storage, DOES NOT verify sha-256 hash
+    @Override
+    public void upload(String name, InputStream stream) throws FileNotFoundException {
+        //The whole thing is enclosed in a big try that catches all the IOexeptions (there are going to be a lot of them)
+        try {
+            File newFile = new File(dir.toString(),name + ".txt");
+            if (!newFile.createNewFile()) { throw new RuntimeException("Error: unable to create a file"); }
+            FileOutputStream fos = new FileOutputStream(newFile); // Getting an output stream
 
-    @Test
-    void testNoInput(){
-        assertThrows(UnsupportedOperationException.class, () -> {
-            fileStorage.upload("FileEmpty.bin", new ByteArrayInputStream( "".getBytes()));
-        });
-    }
+            // Now this is where things get though:
+            byte[] buf = new byte[chunkSize];           // This is going to be buffer
+            int len;                                    // So, in this var we store how many bytes we have read
+            while ((len = stream.read(buf)) != -1) {    // Here, we simultaneously read things into buf and this function returns how many bytes have been read
+                fos.write(buf, 0, len);                 // And we copy this many bytes to the output with no offset
+            }                                           // And we should be good
+            fos.close();                                //Closing the stream and returning void
 
-    @Test
-    void testTwoIdenticalFiles(){
-        assertThrows(RuntimeException.class, () -> {
-            fileStorage.upload("File.bin", new ByteArrayInputStream("One content".getBytes()));
-            fileStorage.upload("File.bin", new ByteArrayInputStream("Other content".getBytes()));
-        });
-    }
-
-    @Test
-    void testFindWithMultipleFiles() throws IOException {
-        fileStorage.upload("FileA.bin", new ByteArrayInputStream( "Hello from 1!".getBytes()));
-        fileStorage.upload("FileB.bin", new ByteArrayInputStream( "Hello from 2!".getBytes()));
-        fileStorage.upload("FileC.bin", new ByteArrayInputStream( "Hello from 3!".getBytes()));
-        fileStorage.upload("FileD.bin", new ByteArrayInputStream( "Hello from 4!".getBytes()));
-        fileStorage.upload("FileE.bin", new ByteArrayInputStream( "Hello from 5!".getBytes()));
-        fileStorage.upload("FileF.bin", new ByteArrayInputStream( "Hello from 6!".getBytes()));
-        InputStream io = fileStorage.download("FileD.bin");
-        String read = "Read: ";
-        while(io.available() != -1){
-            int attemptAtRead = io.read();
-            if (attemptAtRead != -1) {
-                read += (char) attemptAtRead;
-            }
-            else{
-                break;
-            }
+            return;
+        } catch (IOException e) {
+            System.out.println(STR."An error occurred: \{e.getMessage()}");
+            throw new RuntimeException(e);
         }
-        System.out.print(read);
-        assertEquals("Read: Hello from 4!", read);
+    }
+    // This is for downloading things
+    @Override
+    public InputStream download(String name) {
+        File TargetFile = new File(dir.toString(), STR."\{name}.txt");
+        try {
+            return new FileInputStream(TargetFile);
+        } catch (FileNotFoundException e) {
+            throw new UnsupportedOperationException("Error: file not found");
+        }
     }
 }
