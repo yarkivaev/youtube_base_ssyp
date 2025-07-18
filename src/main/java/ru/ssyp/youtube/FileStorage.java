@@ -61,7 +61,7 @@ public class FileStorage implements Storage {
             byte[] buf = new byte[chunkSize];           // This is going to be buffer
             int len;                                    // So, in this var we store how many bytes we have read
             while ((len = stream.read(buf)) != -1) {    // Here, we simultaneously read things into buf and this function returns how many bytes have been read
-                fos.write(buf, 0, len);             // And we copy this many bytes to the output with no offset
+                fos.write(buf, 0, len);                 // And we copy this many bytes to the output with no offset
             }                                           // And we should be good
             fos.close();                                //Closing the stream and returning void
 
