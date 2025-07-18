@@ -10,25 +10,19 @@ import java.sql.*;
 
 public class SqliteUsers implements Users {
     private final PasswordHasher hasher = new PasswordHasher();
-    private final Connection conn;
+    private final PreparedDatabase db;
     private final TokenGen tokenGen;
 
-    public SqliteUsers(Connection conn, TokenGen tokenGen) {
-        this.conn = conn;
+    public SqliteUsers(PreparedDatabase db, TokenGen tokenGen) {
+        this.db = db;
         this.tokenGen = tokenGen;
-    }
-
-    public void initDatabase() throws SQLException {
-        Statement statement = conn.createStatement();
-        statement.executeUpdate("CREATE TABLE users (id INTEGER PRIMARY KEY, name STRING NOT NULL UNIQUE, passhash STRING NOT NULL);");
-        statement.executeUpdate("CREATE TABLE sessions (id INTEGER PRIMARY KEY, token STRING NOT NULL UNIQUE, user INTEGER NOT NULL, FOREIGN KEY (user) REFERENCES users (id));");
     }
 
     private Token addSession(int userid) {
         Token token = tokenGen.token();
 
         try {
-            PreparedStatement statement = conn.prepareStatement("INSERT INTO sessions (token, user) VALUES (?, ?);");
+            PreparedStatement statement = db.conn().prepareStatement("INSERT INTO sessions (token, user) VALUES (?, ?);");
             statement.setString(1, token.value);
             statement.setInt(2, userid);
             statement.executeUpdate();
@@ -51,7 +45,7 @@ public class SqliteUsers implements Users {
 
         try {
             // should fail if username is taken
-            PreparedStatement statement = conn.prepareStatement("INSERT INTO users (name, passhash) VALUES (?, ?);");
+            PreparedStatement statement = db.conn().prepareStatement("INSERT INTO users (name, passhash) VALUES (?, ?);");
             statement.setString(1, name);
             statement.setString(2, hasher.hashPassword(password));
             statement.executeUpdate();
@@ -66,7 +60,7 @@ public class SqliteUsers implements Users {
     @Override
     public Token login(String name, String password) {
         try {
-            PreparedStatement statement = conn.prepareStatement("SELECT id, passhash FROM users WHERE name = ?;");
+            PreparedStatement statement = db.conn().prepareStatement("SELECT id, passhash FROM users WHERE name = ?;");
             statement.setString(1, name);
             ResultSet rs = statement.executeQuery();
 
@@ -90,7 +84,7 @@ public class SqliteUsers implements Users {
     @Override
     public Session getSession(Token token) {
         try {
-            PreparedStatement statement = conn.prepareStatement("SELECT user FROM sessions WHERE token = ?;");
+            PreparedStatement statement = db.conn().prepareStatement("SELECT user FROM sessions WHERE token = ?;");
             statement.setString(1, token.value);
             ResultSet rs = statement.executeQuery();
 
@@ -99,7 +93,7 @@ public class SqliteUsers implements Users {
             }
 
             int userid = rs.getInt("user");
-            return new SqliteSession(conn, userid, token);
+            return new SqliteSession(db, userid, token);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

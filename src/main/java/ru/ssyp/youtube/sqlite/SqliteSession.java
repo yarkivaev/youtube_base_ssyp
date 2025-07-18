@@ -3,18 +3,17 @@ package ru.ssyp.youtube.sqlite;
 import ru.ssyp.youtube.Session;
 import ru.ssyp.youtube.token.Token;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SqliteSession implements Session {
-    private final Connection conn;
+    private final PreparedDatabase db;
     private final int id;
     private final Token token;
 
-    public SqliteSession(Connection conn, int id, Token token) {
-        this.conn = conn;
+    public SqliteSession(PreparedDatabase db, int id, Token token) {
+        this.db = db;
         this.id = id;
         this.token = token;
     }
@@ -27,7 +26,7 @@ public class SqliteSession implements Session {
     @Override
     public String username() {
         try {
-            PreparedStatement statement = conn.prepareStatement("SELECT name FROM users WHERE id = ?;");
+            PreparedStatement statement = db.conn().prepareStatement("SELECT name FROM users WHERE id = ?;");
             statement.setInt(1, id);
             ResultSet rs = statement.executeQuery();
 

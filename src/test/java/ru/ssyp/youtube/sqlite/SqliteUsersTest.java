@@ -1,13 +1,16 @@
-package ru.ssyp.youtube;
+package ru.ssyp.youtube.sqlite;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.ssyp.youtube.Session;
+import ru.ssyp.youtube.sqlite.SqliteDatabase;
 import ru.ssyp.youtube.sqlite.SqliteUsers;
 import ru.ssyp.youtube.token.Token;
 import ru.ssyp.youtube.token.TokenGen;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -19,13 +22,8 @@ public class SqliteUsersTest {
     void setUp() throws SQLException {
         tokenGen = new TokenGenRandomB64(20);
 
-        users = new SqliteUsers(DriverManager.getConnection("jdbc:sqlite::memory:"), tokenGen);
-        users.initDatabase();
-    }
-
-    @Test
-    void testDoubleInit() {
-        Assertions.assertThrows(SQLException.class, () -> users.initDatabase());
+        Connection conn = DriverManager.getConnection("jdbc:sqlite::memory:");
+        users = new SqliteUsers(new SqliteDatabase(conn), tokenGen);
     }
 
     @Test
