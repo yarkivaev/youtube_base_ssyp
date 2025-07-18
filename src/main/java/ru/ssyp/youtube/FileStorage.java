@@ -19,7 +19,7 @@ import java.security.NoSuchAlgorithmException;
 public class FileStorage implements Storage {
     // Declaring three parameters of a file storage instance. Two constructors can be used:
     final Path dir;
-    int chunkSize; // Maximum size of an accepted file
+    int chunkSize; // Size of a chunk in which the files are being uploaded
     //Creating a file storage and adjusting all the parameters
     public FileStorage(Path dir, int chunkSize){
         this.dir = dir;
