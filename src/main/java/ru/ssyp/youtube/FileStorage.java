@@ -7,6 +7,7 @@ public class FileStorage implements Storage {
 
     @Override
     public void upload(String name, InputStream stream) {
+
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'upload'");
     }
