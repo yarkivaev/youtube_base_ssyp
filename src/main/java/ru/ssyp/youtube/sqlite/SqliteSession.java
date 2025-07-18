@@ -1,6 +1,7 @@
 package ru.ssyp.youtube.sqlite;
 
 import ru.ssyp.youtube.Session;
+import ru.ssyp.youtube.Token;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,9 +11,9 @@ import java.sql.SQLException;
 public class SqliteSession implements Session {
     private final Connection conn;
     private final int id;
-    private final String token;
+    private final Token token;
 
-    public SqliteSession(Connection conn, int id, String token) {
+    public SqliteSession(Connection conn, int id, Token token) {
         this.conn = conn;
         this.id = id;
         this.token = token;
@@ -41,7 +42,7 @@ public class SqliteSession implements Session {
     }
 
     @Override
-    public String token() {
+    public Token token() {
         return token;
     }
 }

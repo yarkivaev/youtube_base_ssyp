@@ -33,7 +33,7 @@ public class SqliteUsersTest {
 
     @Test
     void testRegister() {
-        String token1 = users.addUser("testuser", "1");
+        Token token1 = users.addUser("testuser", "1");
         Assertions.assertNotNull(token1);
 
         Session session1 = users.getSession(token1);
@@ -43,7 +43,7 @@ public class SqliteUsersTest {
 
         Assertions.assertNull(users.login("testuser", "wrongpassword"));
 
-        String token2 = users.login("testuser", "1");
+        Token token2 = users.login("testuser", "1");
         Assertions.assertNotEquals(token1, token2);
 
         Session session2 = users.getSession(token2);
@@ -60,7 +60,7 @@ public class SqliteUsersTest {
 
     @Test
     void testNonexistentSession() {
-        Assertions.assertNull(users.getSession("fsdfdsfsdpretendthisisatokensdfsdfsd"));
+        Assertions.assertNull(users.getSession(new Token()));
     }
 
     @Test

@@ -2,11 +2,10 @@ package ru.ssyp.youtube.sqlite;
 
 import ru.ssyp.youtube.PasswordHasher;
 import ru.ssyp.youtube.Session;
+import ru.ssyp.youtube.Token;
 import ru.ssyp.youtube.Users;
 
-import java.security.SecureRandom;
 import java.sql.*;
-import java.util.Base64;
 
 public class SqliteUsers implements Users {
     private final PasswordHasher hasher = new PasswordHasher();
@@ -22,21 +21,12 @@ public class SqliteUsers implements Users {
         statement.executeUpdate("CREATE TABLE sessions (id INTEGER PRIMARY KEY, token STRING NOT NULL UNIQUE, user INTEGER NOT NULL, FOREIGN KEY (user) REFERENCES users (id));");
     }
 
-    private String genToken() {
-        SecureRandom random = new SecureRandom();
-        byte[] bytes = new byte[20];
-        random.nextBytes(bytes);
-
-        Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
-        return encoder.encodeToString(bytes);
-    }
-
-    private String addSession(int userid) {
-        String token = genToken();
+    private Token addSession(int userid) {
+        Token token = new Token();
 
         try {
             PreparedStatement statement = conn.prepareStatement("INSERT INTO sessions (token, user) VALUES (?, ?);");
-            statement.setString(1, token);
+            statement.setString(1, token.value);
             statement.setInt(2, userid);
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -47,7 +37,7 @@ public class SqliteUsers implements Users {
     }
 
     @Override
-    public String addUser(String name, String password) {
+    public Token addUser(String name, String password) {
         if (name.isEmpty() || password.isEmpty()) {
             return null;
         }
@@ -71,7 +61,7 @@ public class SqliteUsers implements Users {
     }
 
     @Override
-    public String login(String name, String password) {
+    public Token login(String name, String password) {
         try {
             PreparedStatement statement = conn.prepareStatement("SELECT id, passhash FROM users WHERE name = ?;");
             statement.setString(1, name);
@@ -95,10 +85,10 @@ public class SqliteUsers implements Users {
     }
 
     @Override
-    public Session getSession(String token) {
+    public Session getSession(Token token) {
         try {
             PreparedStatement statement = conn.prepareStatement("SELECT user FROM sessions WHERE token = ?;");
-            statement.setString(1, token);
+            statement.setString(1, token.value);
             ResultSet rs = statement.executeQuery();
 
             if (!rs.next()) {

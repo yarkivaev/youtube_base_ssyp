@@ -8,5 +8,5 @@ public interface Session {
 
     String username();
 
-    String token();
+    Token token();
 }

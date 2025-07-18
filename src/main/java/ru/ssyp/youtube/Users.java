@@ -7,7 +7,7 @@ public interface Users {
      * @param name Name is unique.
      * @return token
      */
-    String addUser(String name, String password);
+    Token addUser(String name, String password);
 
     /**
      * Log in as existing user.
@@ -15,11 +15,11 @@ public interface Users {
      * @param name Name is unique.
      * @return token
      */
-    String login(String name, String password);
+    Token login(String name, String password);
 
     /**
      * Get session info by token.
      * @return Session or null if token is invalid.
      */
-    Session getSession(String token);
+    Session getSession(Token token);
 }
