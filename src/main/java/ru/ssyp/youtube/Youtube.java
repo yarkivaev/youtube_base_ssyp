@@ -10,5 +10,5 @@ public interface Youtube {
     /*
      * Отправляет поток данных видео, начиная с startSec секунды
      */
-    InputStream load(User user, String name, Double startSec);
+    InputStream load(User user, String name, int startSegment, int resolution);
 }
