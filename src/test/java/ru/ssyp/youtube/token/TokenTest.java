@@ -1,4 +1,4 @@
-package ru.ssyp.youtube;
+package ru.ssyp.youtube.token;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -18,9 +18,9 @@ public class TokenTest {
 
     @Test
     void testEquals() {
-        Token token1 = new Token();
+        Token token1 = new Token("abc");
         Token token2 = new Token(token1.value);
-        Token token3 = new Token();
+        Token token3 = new Token("123");
 
         Assertions.assertEquals(token1, token2);
         Assertions.assertNotEquals(token1, token3);
@@ -29,7 +29,7 @@ public class TokenTest {
 
     @Test
     void testHashCode() {
-        Token token = new Token();
+        Token token = new Token("hash me!");
         Assertions.assertEquals(token.value.hashCode(), token.hashCode());
     }
 }

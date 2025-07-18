@@ -2,17 +2,20 @@ package ru.ssyp.youtube.sqlite;
 
 import ru.ssyp.youtube.PasswordHasher;
 import ru.ssyp.youtube.Session;
-import ru.ssyp.youtube.Token;
+import ru.ssyp.youtube.token.Token;
 import ru.ssyp.youtube.Users;
+import ru.ssyp.youtube.token.TokenGen;
 
 import java.sql.*;
 
 public class SqliteUsers implements Users {
     private final PasswordHasher hasher = new PasswordHasher();
     private final Connection conn;
+    private final TokenGen tokenGen;
 
-    public SqliteUsers(Connection conn) {
+    public SqliteUsers(Connection conn, TokenGen tokenGen) {
         this.conn = conn;
+        this.tokenGen = tokenGen;
     }
 
     public void initDatabase() throws SQLException {
@@ -22,7 +25,7 @@ public class SqliteUsers implements Users {
     }
 
     private Token addSession(int userid) {
-        Token token = new Token();
+        Token token = tokenGen.token();
 
         try {
             PreparedStatement statement = conn.prepareStatement("INSERT INTO sessions (token, user) VALUES (?, ?);");

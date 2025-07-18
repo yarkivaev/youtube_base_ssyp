@@ -1,5 +1,7 @@
 package ru.ssyp.youtube;
 
+import ru.ssyp.youtube.token.Token;
+
 public interface Users {
     /** 
      * Register new user.

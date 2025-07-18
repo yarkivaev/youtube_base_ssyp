@@ -1,19 +1,7 @@
-package ru.ssyp.youtube;
-
-import java.security.SecureRandom;
-import java.util.Base64;
+package ru.ssyp.youtube.token;
 
 public class Token {
     public final String value;
-
-    public Token() {
-        SecureRandom random = new SecureRandom();
-        byte[] bytes = new byte[20];
-        random.nextBytes(bytes);
-
-        Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
-        value = encoder.encodeToString(bytes);
-    }
 
     public Token(String value) {
         this.value = value;
