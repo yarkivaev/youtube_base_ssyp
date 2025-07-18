@@ -48,9 +48,16 @@ public class SqliteUsers implements Users {
 
     @Override
     public String addUser(String name, String password) {
-        // TODO: validate name
+        if (name.isEmpty() || password.isEmpty()) {
+            return null;
+        }
+
+        if (!name.matches("^[a-zA-Z0-9_]*$")) {
+            return null;
+        }
 
         try {
+            // TODO: make sure username isn't taken
             PreparedStatement statement = conn.prepareStatement("INSERT INTO users (name, passhash) VALUES (?, ?);");
             statement.setString(1, name);
             statement.setString(2, hasher.hashPassword(password));
