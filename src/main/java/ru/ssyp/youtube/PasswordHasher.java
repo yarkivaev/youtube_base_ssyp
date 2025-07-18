@@ -43,7 +43,7 @@ public class PasswordHasher {
     }
 
     public boolean checkPassword(String hash, String password) {
-        String[] parts = hash.split(Pattern.quote("$"), 1);
+        String[] parts = hash.split(Pattern.quote("$"), 2);
 
         byte[] salt = decoder.decode(parts[0]);
         byte[] hashBytes = decoder.decode(parts[1]);
