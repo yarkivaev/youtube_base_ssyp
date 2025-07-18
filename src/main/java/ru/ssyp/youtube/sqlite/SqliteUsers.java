@@ -18,8 +18,8 @@ public class SqliteUsers implements Users {
 
     public void initDatabase() throws SQLException {
         Statement statement = conn.createStatement();
-        statement.executeUpdate("CREATE TABLE users (id INTEGER PRIMARY KEY, name STRING NOT NULL, passhash STRING NOT NULL);");
-        statement.executeUpdate("CREATE TABLE sessions (id INTEGER PRIMARY KEY, token STRING NOT NULL, user INTEGER NOT NULL, FOREIGN KEY (user) REFERENCES users (id));");
+        statement.executeUpdate("CREATE TABLE users (id INTEGER PRIMARY KEY, name STRING NOT NULL UNIQUE, passhash STRING NOT NULL);");
+        statement.executeUpdate("CREATE TABLE sessions (id INTEGER PRIMARY KEY, token STRING NOT NULL UNIQUE, user INTEGER NOT NULL, FOREIGN KEY (user) REFERENCES users (id));");
     }
 
     private String genToken() {
@@ -57,12 +57,13 @@ public class SqliteUsers implements Users {
         }
 
         try {
-            // TODO: make sure username isn't taken
+            // should fail if username is taken
             PreparedStatement statement = conn.prepareStatement("INSERT INTO users (name, passhash) VALUES (?, ?);");
             statement.setString(1, name);
             statement.setString(2, hasher.hashPassword(password));
             statement.executeUpdate();
         } catch (SQLException e) {
+            // TODO: different exception/return value if username is taken
             throw new RuntimeException(e);
         }
 
