@@ -1,4 +1,4 @@
-package ru.ssyp.youtube;
+package ru.ssyp.youtube.password;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -10,14 +10,16 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.regex.Pattern;
 
-public class PasswordHasher {
+public class PbkdfPassword implements Password {
     private final SecureRandom random = new SecureRandom();
     private final SecretKeyFactory factory;
     private final Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
-
     private final Base64.Decoder decoder = Base64.getUrlDecoder();
+    private final String value;
 
-    public PasswordHasher() {
+    public PbkdfPassword(String value) {
+        this.value = value;
+
         try {
             factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
         } catch (NoSuchAlgorithmException e) {
@@ -35,19 +37,26 @@ public class PasswordHasher {
         }
     }
 
-    public String hashPassword(String password) {
+    @Override
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String hash() {
         byte[] salt = new byte[16];
         random.nextBytes(salt);
 
-        return encoder.encodeToString(salt) + "$" + encoder.encodeToString(pbkdf2(password, salt));
+        return encoder.encodeToString(salt) + "$" + encoder.encodeToString(pbkdf2(value, salt));
     }
 
-    public boolean checkPassword(String hash, String password) {
+    @Override
+    public boolean check(String hash) {
         String[] parts = hash.split(Pattern.quote("$"), 2);
 
         byte[] salt = decoder.decode(parts[0]);
         byte[] hashBytes = decoder.decode(parts[1]);
 
-        return Arrays.equals(pbkdf2(password, salt), hashBytes);
+        return Arrays.equals(pbkdf2(value, salt), hashBytes);
     }
 }

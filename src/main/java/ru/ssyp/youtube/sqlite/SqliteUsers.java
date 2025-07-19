@@ -1,7 +1,7 @@
 package ru.ssyp.youtube.sqlite;
 
-import ru.ssyp.youtube.PasswordHasher;
 import ru.ssyp.youtube.Session;
+import ru.ssyp.youtube.password.Password;
 import ru.ssyp.youtube.token.Token;
 import ru.ssyp.youtube.Users;
 import ru.ssyp.youtube.token.TokenGen;
@@ -9,7 +9,6 @@ import ru.ssyp.youtube.token.TokenGen;
 import java.sql.*;
 
 public class SqliteUsers implements Users {
-    private final PasswordHasher hasher = new PasswordHasher();
     private final PreparedDatabase db;
     private final TokenGen tokenGen;
 
@@ -34,8 +33,8 @@ public class SqliteUsers implements Users {
     }
 
     @Override
-    public Token addUser(String name, String password) {
-        if (name.isEmpty() || password.isEmpty()) {
+    public Token addUser(String name, Password password) {
+        if (name.isEmpty() || password.value().isEmpty()) {
             return null;
         }
 
@@ -47,7 +46,7 @@ public class SqliteUsers implements Users {
             // should fail if username is taken
             PreparedStatement statement = db.conn().prepareStatement("INSERT INTO users (name, passhash) VALUES (?, ?);");
             statement.setString(1, name);
-            statement.setString(2, hasher.hashPassword(password));
+            statement.setString(2, password.hash());
             statement.executeUpdate();
         } catch (SQLException e) {
             // TODO: different exception/return value if username is taken
@@ -58,7 +57,7 @@ public class SqliteUsers implements Users {
     }
 
     @Override
-    public Token login(String name, String password) {
+    public Token login(String name, Password password) {
         try {
             PreparedStatement statement = db.conn().prepareStatement("SELECT id, passhash FROM users WHERE name = ?;");
             statement.setString(1, name);
@@ -71,7 +70,7 @@ public class SqliteUsers implements Users {
             int id = rs.getInt("id");
             String hash = rs.getString("passhash");
 
-            if (!hasher.checkPassword(hash, password)) {
+            if (!password.check(hash)) {
                 return null;
             }
 
