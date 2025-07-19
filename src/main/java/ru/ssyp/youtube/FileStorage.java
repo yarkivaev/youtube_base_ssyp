@@ -12,15 +12,12 @@ import java.security.NoSuchAlgorithmException;
 
 /*
     Abandon all hope ye, who import this package.
-
-    I tried to add some comments.
  */
 
 public class FileStorage implements Storage {
     // Declaring three parameters of a file storage instance. Two constructors can be used:
-    final Path dir;
-    int chunkSize; // Size of a chunk in which the files are being uploaded
-    //Creating a file storage and adjusting all the parameters
+    final private Path dir;
+    final private int chunkSize;
     public FileStorage(Path dir, int chunkSize){
         this.dir = dir;
         this.chunkSize = chunkSize;
@@ -32,53 +29,52 @@ public class FileStorage implements Storage {
         this(makeDefaultDir());
     }
     private static Path makeDefaultDir(){
-        File dire = new File("SsypYoutubeBaisicStorage");
+        File dire = new File("SsypYoutubeBasicStorage");
         if (!dire.exists()){
             if (!dire.mkdir()) {
-                throw new RuntimeException("Error: failed to create a directory");
+                throw new RuntimeException("Failed to create a directory");
             } else {
                 System.out.println("Created.");
             }
         }
         else{
             if(!dire.isDirectory()){
-                throw new RuntimeException("Error: path exists and is not a directory");
+                throw new RuntimeException("Path exists and is not a directory");
             }
         }
 
-        return FileSystems.getDefault().getPath("SsypYoutubeBaisicStorage");
+        return FileSystems.getDefault().getPath("SsypYoutubeBasicStorage");
     }
     //Upload function: loads the file INTO the storage, DOES NOT verify sha-256 hash
     @Override
     public void upload(String name, InputStream stream) throws FileNotFoundException {
         //The whole thing is enclosed in a big try that catches all the IOexeptions (there are going to be a lot of them)
         try {
-            File newFile = new File(dir.toString(),name + ".txt");
-            if (!newFile.createNewFile()) { throw new RuntimeException("Error: unable to create a file"); }
-            FileOutputStream fos = new FileOutputStream(newFile); // Getting an output stream
+            File newFile = new File(dir.toString(), STR."\{name}.txt");
+            if (!newFile.createNewFile()) { throw new RuntimeException("Unable to create a file"); }
+            FileOutputStream fos = new FileOutputStream(newFile);
 
-            // Now this is where things get though:
-            byte[] buf = new byte[chunkSize];           // This is going to be buffer
-            int len;                                    // So, in this var we store how many bytes we have read
-            while ((len = stream.read(buf)) != -1) {    // Here, we simultaneously read things into buf and this function returns how many bytes have been read
-                fos.write(buf, 0, len);             // And we copy this many bytes to the output with no offset
-            }                                           // And we should be good
-            fos.close();                                //Closing the stream and returning void
-
-            return;
+            // Read chunks from the stream and put them in the file:
+            byte[] buf = new byte[chunkSize];
+            int len;
+            while ((len = stream.read(buf)) != -1) {
+                fos.write(buf, 0, len);
+            }
+            // Close the stream
+            fos.close();
         } catch (IOException e) {
             System.out.println(STR."An error occurred: \{e.getMessage()}");
             throw new RuntimeException(e);
         }
     }
-    // This is for downloading things
+    // This is for downloading things:
     @Override
     public InputStream download(String name) {
         File TargetFile = new File(dir.toString(), STR."\{name}.txt");
         try {
             return new FileInputStream(TargetFile);
         } catch (FileNotFoundException e) {
-            throw new UnsupportedOperationException("Error: file not found");
+            throw new RuntimeException("File not found");
         }
     }
 }
