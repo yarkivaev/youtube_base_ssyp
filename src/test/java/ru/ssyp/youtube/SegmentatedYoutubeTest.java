@@ -69,4 +69,10 @@ public class SegmentatedYoutubeTest {
         assertEquals(savedVideos.size(), set.size());
     }
 
+    @Test
+    public void testUploadTwice() throws IOException, InterruptedException {
+        testUpload("sample-15s.mp4");
+        testUpload("totally-different-sample-15s.mp4");
+    }
+
 }

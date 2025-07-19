@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -106,6 +107,14 @@ public class SegmentatedYoutube implements Youtube {
 
     @Override
     public InputStream load (User user, String name, int startSegment, int resolution){
+        int segmentAmount = videoSegments.getSegmentAmount(name);
+        if (startSegment >= segmentAmount) {
+            throw new RuntimeException("incorrect startSegment");
+        }
+        if (!Arrays.asList(resolutions).contains(Integer.toString(resolution))) {
+            throw new RuntimeException("incorrect resolution");
+        }
+
         String file_name = name + "_segment_" + resolution + "_" + startSegment;
         System.out.println(file_name);
         return storage.download(file_name);
