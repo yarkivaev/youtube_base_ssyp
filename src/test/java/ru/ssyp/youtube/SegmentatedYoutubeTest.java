@@ -4,10 +4,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
-import java.util.List;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import ru.ssyp.youtube.auth.UnauthenticatedException;
+import ru.ssyp.youtube.token.Token;
+import ru.ssyp.youtube.users.FakeSession;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -52,7 +54,7 @@ public class SegmentatedYoutubeTest {
     public void testUpload(String name) throws IOException, InterruptedException, UnauthenticatedException {
         System.out.println(tempDirWithPrefix);
         this.youtube.upload(
-                new FakeUser(),
+                new FakeSession(0, "fakeuser", new Token("faketoken")),
                 "test-file",
                 new FileInputStream(Paths.get("src", "test", "resources", name).toFile())
         );
