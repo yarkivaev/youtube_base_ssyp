@@ -1,5 +1,8 @@
 package ru.ssyp.youtube;
 
+import ru.ssyp.youtube.users.Session;
+
+import java.io.InputStream;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,6 +33,7 @@ public class SegmentatedYoutube implements Youtube {
         this.videoSegments = videoSegments;
     }
 
+
     public SegmentatedYoutube(Storage storage, Path ffmpegPath, Path tmpFolder, VideoSegments videoSegments) {
         this(storage, ffmpegPath, tmpFolder,  videoSegments, new String[] {"1080", "720", "360"});
     }
@@ -37,7 +41,7 @@ public class SegmentatedYoutube implements Youtube {
 
 
     @Override
-    public void upload(User user, String name, InputStream stream) throws IOException, InterruptedException {
+    public void upload(Session user, String name, InputStream stream) throws IOException, InterruptedException {
         System.out.println(tmpFolder);
         Path local_file_path = Paths.get(tmpFolder.toString(), "output.mp4");
         Files.copy(stream, local_file_path);
@@ -106,7 +110,7 @@ public class SegmentatedYoutube implements Youtube {
     }
 
     @Override
-    public InputStream load (User user, String name, int startSegment, int resolution){
+    public InputStream load (Session user, String name, int startSegment, int resolution){
         int segmentAmount = videoSegments.getSegmentAmount(name);
         if (startSegment >= segmentAmount) {
             throw new RuntimeException("incorrect startSegment");
