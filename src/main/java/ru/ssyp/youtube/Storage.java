@@ -1,6 +1,5 @@
 package ru.ssyp.youtube;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
