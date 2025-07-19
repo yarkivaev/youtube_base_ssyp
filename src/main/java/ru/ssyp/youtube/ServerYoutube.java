@@ -19,7 +19,7 @@ public class ServerYoutube implements Youtube {
     }
 
     @Override
-    public InputStream load(Session user, String name, Double startSec) {
+    public InputStream load(Session user, String name, int startSegment, int resolution) {
         // TODO Очень похож на клиентский upload.
         throw new UnsupportedOperationException("Unimplemented method 'load'");
     }
