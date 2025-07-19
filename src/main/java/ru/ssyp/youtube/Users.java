@@ -2,6 +2,9 @@ package ru.ssyp.youtube;
 
 import ru.ssyp.youtube.token.Token;
 
+/**
+ * A user account and session manager.
+ */
 public interface Users {
     /** 
      * Register new user.

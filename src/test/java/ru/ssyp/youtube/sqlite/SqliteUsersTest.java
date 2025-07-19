@@ -4,8 +4,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.ssyp.youtube.Session;
-import ru.ssyp.youtube.sqlite.SqliteDatabase;
-import ru.ssyp.youtube.sqlite.SqliteUsers;
 import ru.ssyp.youtube.token.Token;
 import ru.ssyp.youtube.token.TokenGen;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
@@ -51,7 +49,7 @@ public class SqliteUsersTest {
         Assertions.assertNotEquals(token1, token2);
 
         Session session2 = users.getSession(token2);
-        Assertions.assertEquals(session1.id(), session2.id());
+        Assertions.assertEquals(session1.userId(), session2.userId());
         Assertions.assertNotNull(session2);
         Assertions.assertEquals("testuser", session2.username());
         Assertions.assertEquals(token2, session2.token());
