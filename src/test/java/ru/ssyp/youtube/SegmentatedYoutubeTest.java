@@ -26,21 +26,28 @@ public class SegmentatedYoutubeTest {
 
     private Path tempDirWithPrefix;
 
+    private Map<String, Integer> videoSegmentAmount;
+
+
     @BeforeEach
     public void before() throws IOException {
         this.savedVideos = new HashMap<>();
         this.tempDirWithPrefix = Files.createTempDirectory("segmentated_youtube_test");
+        this.videoSegmentAmount = new HashMap<>();
         this.youtube = new SegmentatedYoutube(
                 new FakeStorage(
                         savedVideos
                 ),
                 Paths.get("C:\\Users\\programmer\\Downloads\\ffmpeg-2025-07-17-git-bc8d06d541-full_build\\ffmpeg-2025-07-17-git-bc8d06d541-full_build\\bin\\ffmpeg.exe"),
-                tempDirWithPrefix
+                tempDirWithPrefix,
+                new MemoryVideoSegments(
+                        videoSegmentAmount
+                )
         );
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"sample-15s.mp4"})
+    @ValueSource(strings = {"sample-15s.mp4" ,"totally-different-sample-15s.mp4"})
     public void testUpload(String name) throws IOException, InterruptedException {
         System.out.println(tempDirWithPrefix);
         this.youtube.upload(
@@ -50,6 +57,8 @@ public class SegmentatedYoutubeTest {
         );
         System.out.println(this.savedVideos);
         assertEquals(24, savedVideos.size());
+        assertEquals(8, videoSegmentAmount.get("test-file"));
+        System.out.println(videoSegmentAmount);
 
         HashSet set = new HashSet();
         for (var i: savedVideos.values()){
