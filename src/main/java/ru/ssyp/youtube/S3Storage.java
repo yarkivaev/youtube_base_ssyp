@@ -20,25 +20,6 @@ public class S3Storage implements Storage {
         this.bucketName = bucketName;
     }
 
-
-    public static void main(String[] args) throws Exception {
-        MinioClient minioClient =
-                MinioClient.builder()
-                        .endpoint("http://localhost:9000")
-                        .credentials("minioadmin", "minioadmin")
-                        .build();
-        System.out.println(minioClient.listBuckets().get(0).name());
-
-        createBucketIfNotExists(minioClient);
-
-        S3Storage storage = new S3Storage(minioClient, "test-bucket");
-        storage.upload("new-test-file.txt", new ByteArrayInputStream("Hello world!!!!".getBytes()));
-        InputStream fileContent = storage.download("new-test-file.txt");
-        System.out.println(new String(fileContent.readAllBytes()));
-        minioClient.close();
-
-    }
-
     @Override
     public void upload(String name, InputStream inputStream) {
         ObjectWriteResponse objectWriteResponse = null;
@@ -61,7 +42,7 @@ public class S3Storage implements Storage {
                 | XmlParserException e) {
             throw new RuntimeException(e);
         }
-        System.out.println("File uploaded successfully." + objectWriteResponse.object());
+        System.out.println("Файл успешно загружен" + objectWriteResponse.object());
     }
 
     @Override
