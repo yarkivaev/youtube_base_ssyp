@@ -132,18 +132,18 @@ public class SegmentatedYoutube implements Youtube {
         return storage.download(file_name);
     }
 
-    public static void main(String[] args) {
-        try(final InputStream is = Files.newInputStream(Paths.get(Paths.get("").toAbsolutePath().toString(), "src", "main", "sample-15s.mp4"))) {
-            SegmentatedYoutube sy = new SegmentatedYoutube(
-                    new FakeStorage(),
-                    Paths.get("C:\\Users\\programmer\\Downloads\\ffmpeg-2025-07-17-git-bc8d06d541-full_build\\ffmpeg-2025-07-17-git-bc8d06d541-full_build\\bin\\ffmpeg.exe"),
-                    Paths.get(Paths.get("").toAbsolutePath().toString(), "src", "main", "files")
-            );
-            sy.upload(new FakeUser(), "name", is);
-            sy.load(new FakeUser(), "name", 3, 720);
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
+//    public static void main(String[] args) {
+//        try(final InputStream is = Files.newInputStream(Paths.get(Paths.get("").toAbsolutePath().toString(), "src", "main", "sample-15s.mp4"))) {
+//            SegmentatedYoutube sy = new SegmentatedYoutube(
+//                    new FakeStorage(),
+//                    Paths.get("C:\\Users\\programmer\\Downloads\\ffmpeg-2025-07-17-git-bc8d06d541-full_build\\ffmpeg-2025-07-17-git-bc8d06d541-full_build\\bin\\ffmpeg.exe"),
+//                    Paths.get(Paths.get("").toAbsolutePath().toString(), "src", "main", "files")
+//            );
+//            sy.upload(new FakeUser(), "name", is);
+//            sy.load(new FakeUser(), "name", 3, 720);
+//        } catch (IOException | InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//    }
 }

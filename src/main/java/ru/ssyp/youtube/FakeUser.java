@@ -3,6 +3,6 @@ package ru.ssyp.youtube;
 public class FakeUser implements User{
     @Override
     public String uniqueName() {
-        return null;
+        return "That is null";
     }
 }
