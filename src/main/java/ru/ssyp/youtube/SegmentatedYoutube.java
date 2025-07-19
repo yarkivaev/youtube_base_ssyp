@@ -31,9 +31,8 @@ public class SegmentatedYoutube implements Youtube {
     }
 
     public SegmentatedYoutube(Storage storage, Path ffmpegPath, Path tmpFolder, VideoSegments videoSegments) {
-        this(storage, ffmpegPath, tmpFolder,  videoSegments, new String[] {"1080", "720", "360"});
+        this(storage, ffmpegPath, tmpFolder, videoSegments, new String[]{"1080", "720", "360"});
     }
-
 
 
     @Override
@@ -42,43 +41,19 @@ public class SegmentatedYoutube implements Youtube {
         Path local_file_path = Paths.get(tmpFolder.toString(), "output.mp4");
         Files.copy(stream, local_file_path);
 
-        for (String resolution : resolutions) {
-            ProcessBuilder pb = new ProcessBuilder();
-            pb.command(
-                    ffmpegPath.toString(), "-y", "-i", local_file_path.toString(),
-                    "-vf", "scale=-1:" + resolution + ",setsar=1:1", "-c:v", "libx264", "-c:a",
-                    "copy", Paths.get(tmpFolder.toString(), "output_" + resolution + ".mp4").toString()
-            );
-            Process process = pb.redirectErrorStream(true).start();
-            InputStream ffmpeg_stream = process.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(ffmpeg_stream));
 
-            while (true) {
-                String log = reader.readLine();
-                if (Objects.isNull(log))
-                    break;
-            }
-            int ret = process.waitFor();
-            ProcessBuilder pb1 = new ProcessBuilder();
-            pb1.command(
-                    ffmpegPath.toString(),
-                    "-i", Paths.get(tmpFolder.toString(), "output_" + resolution + ".mp4").toString(),
-                    "-force_key_frames", "\"expr:gte(t,n_forced*1)\"",
-                    "-c:v", "libx264", "-preset", "fast", "-c:a", "aac",
-                    "-f", "segment", "-segment_time", "2", "-reset_timestamps", "1",
-                    Paths.get(tmpFolder.toString(), "output_" + resolution + "_%d.mp4").toString()
-            );
-            Process process2 = pb1.redirectErrorStream(true).start();
-            ffmpeg_stream = process2.getInputStream();
-            reader = new BufferedReader(new InputStreamReader(ffmpeg_stream));
+        Thread[] threads = new Thread[resolutions.length];
+        for (int i = 0; i < resolutions.length; i++) {
+            VideoEditingProcess vep = new VideoEditingProcess(ffmpegPath, tmpFolder, resolutions[i]);
+            threads[i] = new Thread(vep);
+        }
 
-            while (true) {
-                String log = reader.readLine();
-                if (Objects.isNull(log))
-                    break;
-            }
-            int ret2 = process2.waitFor();
-            System.out.println(resolution + " cropped");
+        for (Thread thread : threads) {
+            thread.start();
+        }
+
+        for (Thread thread : threads) {
+            thread.join();
         }
 
 
@@ -98,7 +73,7 @@ public class SegmentatedYoutube implements Youtube {
 
         videoSegments.sendSegmentAmount(name, segment_count);
 
-        for(File file: file_list) {
+        for (File file : file_list) {
             if (!file.isDirectory()) {
                 file.delete();
             }
@@ -106,7 +81,7 @@ public class SegmentatedYoutube implements Youtube {
     }
 
     @Override
-    public InputStream load (User user, String name, int startSegment, int resolution){
+    public InputStream load(User user, String name, int startSegment, int resolution) {
         int segmentAmount = videoSegments.getSegmentAmount(name);
         if (startSegment >= segmentAmount) {
             throw new RuntimeException("incorrect startSegment");
@@ -120,3 +95,29 @@ public class SegmentatedYoutube implements Youtube {
         return storage.download(file_name);
     }
 }
+
+//    public static void main(String[] args) throws InterruptedException {
+//        Runnable runnable = new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    System.out.println("HELLO!");
+//                    Thread.sleep(1000);
+//                    System.out.println("Goodbye!");
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+//        };
+//        Thread thread1 = new Thread(
+//                runnable
+//        );
+//        Thread thread2 = new Thread(
+//                runnable
+//        );
+//        thread1.start();
+//        thread2.start();
+//        thread1.join();
+//        thread2.join();
+//    }
+//}
