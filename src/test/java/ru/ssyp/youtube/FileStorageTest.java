@@ -33,7 +33,6 @@ class FileStorageTest {
             int attemptAtRead = io.read();
             if (attemptAtRead != -1) {
                 read += (char) attemptAtRead;
-                System.out.println(STR."\{attemptAtRead} ");
             }
             else{
                 break;
@@ -60,7 +59,7 @@ class FileStorageTest {
         try {
             fileStorage.upload("File.bin", new ByteArrayInputStream("One content".getBytes()));
             fileStorage.upload("File.bin", new ByteArrayInputStream("Other content".getBytes()));
-        } catch (RuntimeException | FileNotFoundException e) {
+        } catch (RuntimeException e) {
             System.out.print("Reached the exception clause, checking contence...");
             InputStream io = fileStorage.download("File.bin");
             String read = "Read: ";
@@ -98,7 +97,6 @@ class FileStorageTest {
             int attemptAtRead = io.read();
             if (attemptAtRead != -1) {
                 read += (char) attemptAtRead;
-                System.out.println(STR."\{attemptAtRead} ");
             }
             else{
                 break;

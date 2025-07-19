@@ -3,12 +3,6 @@ package ru.ssyp.youtube;
 import java.io.*;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Base64;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 /*
     Abandon all hope ye, who import this package.
@@ -42,15 +36,14 @@ public class FileStorage implements Storage {
                 throw new RuntimeException("Path exists and is not a directory");
             }
         }
-
         return FileSystems.getDefault().getPath("SsypYoutubeBasicStorage");
     }
     //Upload function: loads the file INTO the storage, DOES NOT verify sha-256 hash
     @Override
-    public void upload(String name, InputStream stream) throws FileNotFoundException {
+    public void upload(String name, InputStream stream) {
         //The whole thing is enclosed in a big try that catches all the IOexeptions (there are going to be a lot of them)
         try {
-            File newFile = new File(dir.toString(), STR."\{name}.txt");
+            File newFile = new File(dir.toString(), name + ".txt");
             if (!newFile.createNewFile()) { throw new RuntimeException("Unable to create a file"); }
             FileOutputStream fos = new FileOutputStream(newFile);
 
@@ -63,14 +56,13 @@ public class FileStorage implements Storage {
             // Close the stream
             fos.close();
         } catch (IOException e) {
-            System.out.println(STR."An error occurred: \{e.getMessage()}");
             throw new RuntimeException(e);
         }
     }
     // This is for downloading things:
     @Override
     public InputStream download(String name) {
-        File TargetFile = new File(dir.toString(), STR."\{name}.txt");
+        File TargetFile = new File(dir.toString(), name + ".txt");
         try {
             return new FileInputStream(TargetFile);
         } catch (FileNotFoundException e) {
