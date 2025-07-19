@@ -39,7 +39,6 @@ public class SegmentatedYoutubeTest {
                         savedVideos
                 ),
                 Paths.get("C:\\Users\\programmer\\Downloads\\ffmpeg-2025-07-17-git-bc8d06d541-full_build\\ffmpeg-2025-07-17-git-bc8d06d541-full_build\\bin\\ffmpeg.exe"),
-                tempDirWithPrefix,
                 new MemoryVideoSegments(
                         videoSegmentAmount
                 )

@@ -20,35 +20,36 @@ public class SegmentatedYoutube implements Youtube {
 
     private final VideoSegments videoSegments;
 
-    private final Path tmpFolder;
+//    private final Path tempDir;
 
     private final String[] resolutions;
 
 
-    public SegmentatedYoutube(Storage storage, Path ffmpegPath, Path tmpFolder, VideoSegments videoSegments, String[] resolutions) {
+    public SegmentatedYoutube(Storage storage, Path ffmpegPath, VideoSegments videoSegments, String[] resolutions) {
         this.storage = storage;
         this.ffmpegPath = ffmpegPath;
-        this.tmpFolder = tmpFolder;
+//        this.tempDir = tmpFolder;
         this.resolutions = resolutions;
         this.videoSegments = videoSegments;
     }
 
 
-    public SegmentatedYoutube(Storage storage, Path ffmpegPath, Path tmpFolder, VideoSegments videoSegments) {
-        this(storage, ffmpegPath, tmpFolder, videoSegments, new String[]{"1080", "720", "360"});
+    public SegmentatedYoutube(Storage storage, Path ffmpegPath, VideoSegments videoSegments) {
+        this(storage, ffmpegPath, videoSegments, new String[]{"1080", "720", "360"});
     }
 
 
     @Override
     public void upload(Session user, String name, InputStream stream) throws IOException, InterruptedException {
-        System.out.println(tmpFolder);
-        Path local_file_path = Paths.get(tmpFolder.toString(), "output.mp4");
+        Path tempDir = Files.createTempDirectory(name);
+        System.out.println(tempDir);
+        Path local_file_path = Paths.get(tempDir.toString(), "output.mp4");
         Files.copy(stream, local_file_path);
 
 
         Thread[] threads = new Thread[resolutions.length];
         for (int i = 0; i < resolutions.length; i++) {
-            VideoEditingProcess vep = new VideoEditingProcess(ffmpegPath, tmpFolder, resolutions[i]);
+            VideoEditingProcess vep = new VideoEditingProcess(ffmpegPath, tempDir, resolutions[i]);
             threads[i] = new Thread(vep);
         }
 
@@ -61,14 +62,14 @@ public class SegmentatedYoutube implements Youtube {
         }
 
 
-        File[] file_list = new File(tmpFolder.toString()).listFiles();
+        File[] file_list = new File(tempDir.toString()).listFiles();
         int segment_count = (file_list.length - 1 - resolutions.length) / resolutions.length;
         System.out.println("\nsegment_count: " + segment_count);
 
 
         for (String resolution : resolutions) {
             for (int i = 0; i < segment_count; i++) {
-                InputStream is = Files.newInputStream(Paths.get(tmpFolder.toString(), "output_" + resolution + "_" + i + ".mp4"));
+                InputStream is = Files.newInputStream(Paths.get(tempDir.toString(), "output_" + resolution + "_" + i + ".mp4"));
                 String segment_name = name + "_segment_" + resolution + "_" + Integer.toString(i);
                 storage.upload(segment_name, is);
             }
