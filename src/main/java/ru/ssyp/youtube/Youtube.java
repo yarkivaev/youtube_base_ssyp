@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 
 public interface Youtube {
-    void upload(User user, String title, String description, String name, InputStream stream);
+    void upload(User user, uploadSignature str, InputStream stream);
 
-    InputStream load(User user, String name);
+//    InputStream load(User user, String name);
 }

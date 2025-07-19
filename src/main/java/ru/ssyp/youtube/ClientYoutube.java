@@ -1,58 +1,69 @@
 package ru.ssyp.youtube;
 
-import javax.security.auth.kerberos.KerberosKey;
 import java.io.*;
 import java.net.Socket;
 import java.io.InputStream;
-import java.util.Optional;
 
 public class ClientYoutube implements Youtube {
+    private final Socket clientSocket = new Socket("0.0.0.0", 8080);
 
-    private boolean add;
+    public ClientYoutube() throws IOException {
 
-    @Override
-    public void upload(User user, String title, String description, String name, InputStream stream) {
+    }
+
+    //    @Override
+    public void upload(User user, uploadSignature str, InputStream stream) {
         // todo: 1) Делаю запрос на подключение к серверу. Отправляю компанду на сохранение файла
         //       2) Отправляю файл на сервер по частям
         //       3) После того, как отправил файл, жду от сервера контрольную сумму.
         //       4) Получив контрольную сумму, сравниваю её с файлом. Отправляю ОК на сервер
         try {
-            Socket clientSocket = new Socket("0.0.0.0", 8080);
+            String title = str.title;
+            String description = str.discreaption;
+//            Socket clientSocket = new Socket(localhost, 8080);
             DataOutputStream dOut = new DataOutputStream(clientSocket.getOutputStream());
-            byte[] content = stream.readAllBytes();
-            dOut.writeUTF(title + description + new String(content) + content.length);
-            dOut.flush();
+            byte[] part = stream.readNBytes(1024^2);
+            while (part.toString().isEmpty()) {
+                dOut.writeUTF(title + description + new String(part) + part.length);
+                dOut.flush();
+                part = stream.readNBytes(1024^2);
+            }
         } catch (java.io.IOException e) {
             String i = "да как так то :(";
             System.out.println(i);
         }
     }
-    @Override
-    public InputStream load(User user, String name) {
+//    @Override
+//    public InputStream load(User user, String name) {
         // todo: Очень похож на серверный upload
-        throw new UnsupportedOperationException("Unimplemented method 'load'");
-    }
+//        throw new UnsupportedOperationException("Unimplemented method 'load'");
+//    }
     public static void main(String[] args) {
-        while (true) {
-            String a = System.console().readLine();
-            byte[] bcnt = a.getBytes();
-            if (bcnt[0] == (byte) 0x00) ;
-            {
-                new ClientYoutube().getVideoInfo(a);
+        try {
+            while (true) {
+                String a = System.console().readLine();
+                byte[] bcnt = a.getBytes();
+                if (bcnt[0] == (byte) 0x00) ;
+                {
+                    new ClientYoutube().getVideoInfo(a);
+                }
+                if (bcnt[0] == (byte) 0x01 || bcnt[0] == (byte) 0x02 || bcnt[0] == (byte) 0x03 || bcnt[0] == (byte) 0x04)
+                    ;
+                {
+                    new ClientYoutube().videoList(a);
+                }
+                if (bcnt[0] == (byte) 0x05) ;
+                {
+                    new ClientYoutube().uploadVideo(a);
+                }
             }
-            if (bcnt[0] == (byte) 0x01 || bcnt[0] == (byte) 0x02 || bcnt[0] == (byte) 0x03 || bcnt[0] == (byte) 0x04);
-            {
-                new ClientYoutube().videoList(a);
-            }
-            if (bcnt[0] == (byte) 0x05) ;
-            {
-                new ClientYoutube().uploadVideo(a);
-            }
+        } catch (IOException e){
+            System.out.println("Бывает");
         }
     }
     public void getVideoInfo(String a){
         try {
-            Socket clientSocket = new Socket("0.0.0.0", 8080);
+//            Socket clientSocket = new Socket("0.0.0.0", 8080);
             OutputStream clientSocketStream = clientSocket.getOutputStream();
             byte[] toWrite = new byte[a.length() + 1];
             toWrite[0] = 0x00;
@@ -71,7 +82,7 @@ public class ClientYoutube implements Youtube {
 
     public void videoList(String a){
         try {
-            Socket clientSocket = new Socket("0.0.0.0", 8080);
+//            Socket clientSocket = new Socket("0.0.0.0", 8080);
             OutputStream clientSocketStream = clientSocket.getOutputStream();
             clientSocketStream.write(a.getBytes());
             clientSocketStream.flush();
@@ -86,13 +97,15 @@ public class ClientYoutube implements Youtube {
 
     public void uploadVideo(String a) {
         try {
-            Socket clientSocket = new Socket("0.0.0.0", 8080);
             String[] x = a.split(" ");
             User user = new User(x[0]);
-            String title = new String(x[1]);
-            String discreaption = new String(x[2]);
-            String name = new String(x[3]);
-            new ClientYoutube().upload(user, title, discreaption, name, new ByteArrayInputStream(x[4].getBytes()));
+            uploadSignature str = new uploadSignature(x[1], x[2], x[3]);
+            String title = str.title;
+            String description = str.discreaption;
+            String name = str.name;
+//            String localhost = new String(x[4]);
+//            Socket clientSocket = new Socket(localhost, 8080);
+            new ClientYoutube().upload(user, new uploadSignature(title, description, name), new ByteArrayInputStream(x[5].getBytes()));
             InputStream clientSocketInStream = clientSocket.getInputStream();
             System.out.println(clientSocketInStream);
             while (clientSocketInStream.readAllBytes()[0] != 0x01 &&
