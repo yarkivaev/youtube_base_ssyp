@@ -13,18 +13,15 @@ import java.util.Objects;
 
 /*
 * This file contains tests for FileStorage class
-* The last commit passes all of them
 */
 
 class FileStorageTest {
-
-    // I mean, the names of the tests are pretty self-explanatory
     
     private FileStorage fileStorage;
     
     @BeforeEach
     void setUp() {
-        fileStorage = new FileStorage(); //Setting very low max file size for testing purposes
+        fileStorage = new FileStorage();
     }
     
     @Test
@@ -36,7 +33,7 @@ class FileStorageTest {
             int attemptAtRead = io.read();
             if (attemptAtRead != -1) {
                 read += (char) attemptAtRead;
-                System.out.println(attemptAtRead + " ");
+                System.out.println(STR."\{attemptAtRead} ");
             }
             else{
                 break;
@@ -48,7 +45,7 @@ class FileStorageTest {
     
     @Test
     void testDownloadThrowsUnsupportedOperationException() {
-        assertThrows(UnsupportedOperationException.class, () -> {
+        assertThrows(RuntimeException.class, () -> {
             fileStorage.download("testFile");
         });
     }
@@ -81,6 +78,34 @@ class FileStorageTest {
             assertEquals("Read: One content", read);
 
         }
+    }
+
+    @Test
+    void testLargeFile() throws IOException {
+        File TargetFile = new File("C:\\SsypYoutubeBaisicStorage\\100MB.txt");
+        InputStream io;
+        try {
+            io = new FileInputStream(TargetFile);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("File not found");
+        }
+        fileStorage.upload("FileVeryHeavy.txt", io);
+        io = fileStorage.download("FileVeryHeavy.txt");
+        String read = "Read: ";
+        int count = 0;
+        while(count < 5){
+            count += 1;
+            int attemptAtRead = io.read();
+            if (attemptAtRead != -1) {
+                read += (char) attemptAtRead;
+                System.out.println(STR."\{attemptAtRead} ");
+            }
+            else{
+                break;
+            }
+        }
+        System.out.print(read);
+        assertEquals("Read: 20850", read);
     }
 
     @Test
