@@ -1,5 +1,7 @@
 package ru.ssyp.youtube;
 
+import ru.ssyp.youtube.users.Session;
+
 import java.io.InputStream;
 
 public interface Youtube {

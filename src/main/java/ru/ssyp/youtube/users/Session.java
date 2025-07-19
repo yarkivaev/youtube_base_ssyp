@@ -1,4 +1,4 @@
-package ru.ssyp.youtube;
+package ru.ssyp.youtube.users;
 
 import ru.ssyp.youtube.token.Token;
 

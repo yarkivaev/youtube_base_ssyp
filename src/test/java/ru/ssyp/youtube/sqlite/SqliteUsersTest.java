@@ -3,7 +3,7 @@ package ru.ssyp.youtube.sqlite;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.ssyp.youtube.Session;
+import ru.ssyp.youtube.users.*;
 import ru.ssyp.youtube.password.Password;
 import ru.ssyp.youtube.password.DummyPassword;
 import ru.ssyp.youtube.token.Token;
@@ -30,28 +30,27 @@ public class SqliteUsersTest {
     void testInvalidUsernameOrPassword() {
         Password pass = new DummyPassword("123");
 
-        Assertions.assertNull(users.addUser("this has spaces", pass));
-        Assertions.assertNull(users.addUser("русские_буквы", pass));
-        Assertions.assertNull(users.addUser("!\"№;%:&*()=+-,<.>/?\\|", pass));
+        Assertions.assertThrows(InvalidUsernameException.class, () -> users.addUser("this has spaces", pass));
+        Assertions.assertThrows(InvalidUsernameException.class, () -> users.addUser("русские_буквы", pass));
+        Assertions.assertThrows(InvalidUsernameException.class, () -> users.addUser("!\"№;%:&*()=+-,<.>/?\\|", pass));
 
         Password empty = new DummyPassword("");
-        Assertions.assertNull(users.addUser("valid_username", empty));
+        Assertions.assertThrows(InvalidPasswordException.class, () -> users.addUser("valid_username", empty));
     }
 
     @Test
-    void testRegister() {
+    void testRegister() throws InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidTokenException {
         Password pass = new DummyPassword("1");
         Password wrong = new DummyPassword("wrongpassword");
 
         Token token1 = users.addUser("testuser", pass);
-        Assertions.assertNotNull(token1);
 
         Session session1 = users.getSession(token1);
         Assertions.assertNotNull(session1);
         Assertions.assertEquals("testuser", session1.username());
         Assertions.assertEquals(token1, session1.token());
 
-        Assertions.assertNull(users.login("testuser", wrong));
+        Assertions.assertThrows(InvalidPasswordException.class, () -> users.login("testuser", wrong));
 
         Token token2 = users.login("testuser", pass);
         Assertions.assertNotEquals(token1, token2);
@@ -65,17 +64,17 @@ public class SqliteUsersTest {
 
     @Test
     void testNonexistentUser() {
-        Assertions.assertNull(users.login("not_real", new DummyPassword("what password?")));
+        Assertions.assertThrows(InvalidUsernameException.class, () -> users.login("not_real", new DummyPassword("what password?")));
     }
 
     @Test
     void testNonexistentSession() {
-        Assertions.assertNull(users.getSession(tokenGen.token()));
+        Assertions.assertThrows(InvalidTokenException.class, () -> users.getSession(tokenGen.token()));
     }
 
     @Test
     void testTakenUsername() {
-        Assertions.assertNotNull(users.addUser("user", new DummyPassword("correct horse battery staple")));
-        Assertions.assertThrows(RuntimeException.class, () -> users.addUser("user", new DummyPassword("12345")));
+        Assertions.assertDoesNotThrow(() -> users.addUser("user", new DummyPassword("correct horse battery staple")));
+        Assertions.assertThrows(UsernameTakenException.class, () -> users.addUser("user", new DummyPassword("12345")));
     }
 }

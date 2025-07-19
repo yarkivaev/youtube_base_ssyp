@@ -1,9 +1,8 @@
 package ru.ssyp.youtube.sqlite;
 
-import ru.ssyp.youtube.Session;
+import ru.ssyp.youtube.users.*;
 import ru.ssyp.youtube.password.Password;
 import ru.ssyp.youtube.token.Token;
-import ru.ssyp.youtube.Users;
 import ru.ssyp.youtube.token.TokenGen;
 
 import java.sql.*;
@@ -33,13 +32,13 @@ public class SqliteUsers implements Users {
     }
 
     @Override
-    public Token addUser(String name, Password password) {
-        if (name.isEmpty() || password.value().isEmpty()) {
-            return null;
+    public Token addUser(String name, Password password) throws InvalidUsernameException, InvalidPasswordException, UsernameTakenException {
+        if (password.value().isEmpty()) {
+            throw new InvalidPasswordException();
         }
 
-        if (!name.matches("^[a-zA-Z0-9_]*$")) {
-            return null;
+        if (name.isEmpty() || !name.matches("^[a-zA-Z0-9_]*$")) {
+            throw new InvalidUsernameException();
         }
 
         try {
@@ -49,29 +48,29 @@ public class SqliteUsers implements Users {
             statement.setString(2, password.hash());
             statement.executeUpdate();
         } catch (SQLException e) {
-            // TODO: different exception/return value if username is taken
-            throw new RuntimeException(e);
+            // TODO: throw RuntimeException if error is not related to UNIQUE constraint
+            throw new UsernameTakenException();
         }
 
         return login(name, password);
     }
 
     @Override
-    public Token login(String name, Password password) {
+    public Token login(String name, Password password) throws InvalidUsernameException, InvalidPasswordException {
         try {
             PreparedStatement statement = db.conn().prepareStatement("SELECT id, passhash FROM users WHERE name = ?;");
             statement.setString(1, name);
             ResultSet rs = statement.executeQuery();
 
             if (!rs.next()) {
-                return null;
+                throw new InvalidUsernameException();
             }
 
             int id = rs.getInt("id");
             String hash = rs.getString("passhash");
 
             if (!password.check(hash)) {
-                return null;
+                throw new InvalidPasswordException();
             }
 
             return addSession(id);
@@ -81,14 +80,14 @@ public class SqliteUsers implements Users {
     }
 
     @Override
-    public Session getSession(Token token) {
+    public Session getSession(Token token) throws InvalidTokenException {
         try {
             PreparedStatement statement = db.conn().prepareStatement("SELECT user FROM sessions WHERE token = ?;");
             statement.setString(1, token.value);
             ResultSet rs = statement.executeQuery();
 
             if (!rs.next()) {
-                return null;
+                throw new InvalidTokenException();
             }
 
             int userid = rs.getInt("user");
