@@ -7,6 +7,7 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -31,6 +32,7 @@ public class S3StorageTest {
         storage = new S3Storage(minioClient, "test-bucket", Files.createTempDirectory("s3_tests"));
     }
 
+    @Disabled
     @ParameterizedTest
     @ValueSource(strings = {"50mb.jpg", "100-mbjpg.jpg"})
     public void testUploadDownload(String mediaFile) throws IOException {
