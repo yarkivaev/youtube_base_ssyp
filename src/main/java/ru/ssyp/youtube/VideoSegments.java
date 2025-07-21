@@ -2,6 +2,6 @@ package ru.ssyp.youtube;
 
 public interface VideoSegments {
 
-    void sendSegmentAmount(String videoName, int segmentsAmount);
-    Integer getSegmentAmount(String videoName);
+    void sendSegmentAmount(int videoId, int segmentsAmount);
+    Integer getSegmentAmount(int videoId);
 }
