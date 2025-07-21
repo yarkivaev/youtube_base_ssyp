@@ -12,11 +12,11 @@ public class FakeUser implements Session {
 
     @Override
     public String username() {
-        return null;
+        return "That is null";
     }
 
     @Override
     public Token token() {
-        return null;
+        return new Token("That is token");
     }
 }
