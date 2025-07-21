@@ -20,15 +20,12 @@ public class SegmentatedYoutube implements Youtube {
 
     private final VideoSegments videoSegments;
 
-//    private final Path tempDir;
-
     private final String[] resolutions;
 
 
     public SegmentatedYoutube(Storage storage, Path ffmpegPath, VideoSegments videoSegments, String[] resolutions) {
         this.storage = storage;
         this.ffmpegPath = ffmpegPath;
-//        this.tempDir = tmpFolder;
         this.resolutions = resolutions;
         this.videoSegments = videoSegments;
     }
@@ -83,6 +80,8 @@ public class SegmentatedYoutube implements Youtube {
                 file.delete();
             }
         }
+        Files.delete(tempDir);
+
     }
 
     @Override
@@ -101,28 +100,3 @@ public class SegmentatedYoutube implements Youtube {
     }
 }
 
-//    public static void main(String[] args) throws InterruptedException {
-//        Runnable runnable = new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    System.out.println("HELLO!");
-//                    Thread.sleep(1000);
-//                    System.out.println("Goodbye!");
-//                } catch (InterruptedException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//        };
-//        Thread thread1 = new Thread(
-//                runnable
-//        );
-//        Thread thread2 = new Thread(
-//                runnable
-//        );
-//        thread1.start();
-//        thread2.start();
-//        thread1.join();
-//        thread2.join();
-//    }
-//}
