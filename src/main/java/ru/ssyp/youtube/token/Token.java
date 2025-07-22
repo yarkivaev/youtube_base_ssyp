@@ -1,6 +1,12 @@
 package ru.ssyp.youtube.token;
 
-public class Token {
+import ru.ssyp.youtube.ProtocolValue;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+public class Token implements ProtocolValue {
     public final String value;
 
     public Token(String value) {
@@ -24,5 +30,10 @@ public class Token {
     @Override
     public int hashCode() {
         return value.hashCode();
+    }
+
+    @Override
+    public InputStream rawContent() {
+        return new ByteArrayInputStream(value.getBytes());
     }
 }

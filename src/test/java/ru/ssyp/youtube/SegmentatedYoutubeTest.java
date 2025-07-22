@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import ru.ssyp.youtube.video.Video;
+import ru.ssyp.youtube.video.VideoMetadata;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -26,7 +28,7 @@ public class SegmentatedYoutubeTest {
 
     private Path tempDirWithPrefix;
 
-    private Map<String, Integer> videoSegmentAmount;
+    private Map<Integer, Integer> videoSegmentAmount;
 
 
     @BeforeEach
@@ -51,7 +53,7 @@ public class SegmentatedYoutubeTest {
         System.out.println(tempDirWithPrefix);
         this.youtube.upload(
                 new FakeUser(),
-                "test-file",
+                VideoMetadata.fakeMetadata(),
                 new FileInputStream(Paths.get("src", "test", "resources", name).toFile())
         );
         System.out.println(this.savedVideos);

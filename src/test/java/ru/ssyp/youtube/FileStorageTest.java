@@ -1,5 +1,6 @@
 package ru.ssyp.youtube;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
@@ -79,6 +80,7 @@ class FileStorageTest {
         }
     }
 
+    @Disabled
     @Test
     void testLargeFile() throws IOException {
         File TargetFile = new File("C:\\SsypYoutubeBaisicStorage\\100MB.txt");

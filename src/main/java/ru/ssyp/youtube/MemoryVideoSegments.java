@@ -5,20 +5,20 @@ import java.util.Map;
 
 public class MemoryVideoSegments implements VideoSegments {
 
-    Map<String, Integer> videoSegmentAmount;
+    Map<Integer, Integer> videoSegmentAmount;
 
-    public MemoryVideoSegments(Map<String, Integer> videoSegmentAmount) {
+    public MemoryVideoSegments(Map<Integer, Integer> videoSegmentAmount) {
         this.videoSegmentAmount = videoSegmentAmount;
     }
 
     @Override
-    public void sendSegmentAmount(String videoName, int segmentsAmount) {
-        videoSegmentAmount.put(videoName, segmentsAmount);
+    public void sendSegmentAmount(int videoId, int segmentsAmount) {
+        videoSegmentAmount.put(videoId, segmentsAmount);
     }
 
     @Override
-    public Integer getSegmentAmount(String videoName) {
-        return videoSegmentAmount.get(videoName);
+    public Integer getSegmentAmount(int videoId) {
+        return videoSegmentAmount.get(videoId);
     }
 
 
