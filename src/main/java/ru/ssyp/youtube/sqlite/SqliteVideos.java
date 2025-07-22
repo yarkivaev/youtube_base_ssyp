@@ -52,10 +52,9 @@ public class SqliteVideos implements Videos {
     @Override
     public Video video(int videoId) {
         Connection dbConn = db.conn();
-        //int segments = videoSegments.getSegmentAmount(videoId);
-        int segments = 0;
+        int segments = videoSegments.getSegmentAmount(videoId);
+        //int segments = 0;
         short segmentLength = 2;
-        Video targetVideo = null;
         var sql = """
         SELECT owner, title, description, maxQuality FROM videos WHERE "videoId" = ?
         """;
@@ -66,23 +65,17 @@ public class SqliteVideos implements Videos {
             var rs = pstmt.executeQuery();
             boolean first = true;
             while (rs.next()) {
-                if(first){
-                    Quality quality;
-                    first = false;
-                    VideoMetadata metadata = new VideoMetadata(rs.getString("title"), rs.getString("description"));
-                    targetVideo = new Video(videoId, metadata, segments, segmentLength, Quality.fromPriority(rs.getInt("maxQuality")), rs.getString("owner"));
-                }
-                else{
-                    throw new RuntimeException("Index duplicates found");
-                }
+                Quality quality;
+                first = false;
+                VideoMetadata metadata = new VideoMetadata(rs.getString("title"), rs.getString("description"));
+                return new Video(videoId, metadata, segments, segmentLength, Quality.fromPriority(rs.getInt("maxQuality")), rs.getString("owner"));
             }
-            if(first){
-                throw new RuntimeException("Video not found");
-            }
+            throw new RuntimeException("Video not found");
+
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
-        return targetVideo;
+        return null;
     }
 
     public void deleteVideo(int videoId){

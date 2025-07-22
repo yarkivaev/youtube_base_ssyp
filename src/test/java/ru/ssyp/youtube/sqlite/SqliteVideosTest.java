@@ -3,6 +3,7 @@ package ru.ssyp.youtube.sqlite;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.ssyp.youtube.MemoryVideoSegments;
+import ru.ssyp.youtube.VideoSegments;
 import ru.ssyp.youtube.token.Token;
 import ru.ssyp.youtube.users.Session;
 import ru.ssyp.youtube.video.Quality;
@@ -22,10 +23,13 @@ public class SqliteVideosTest {
 
     private Videos videos;
 
+    private VideoSegments videoSegments;
+
     @BeforeEach
     void setUp() throws SQLException {
         Connection conn = DriverManager.getConnection("jdbc:sqlite::memory:");
-        videos = new SqliteVideos(new SqliteDatabase(conn), new MemoryVideoSegments(new HashMap<>()));
+        videoSegments =  new MemoryVideoSegments(new HashMap<>());
+        videos = new SqliteVideos(new SqliteDatabase(conn), videoSegments);
     }
 
     @Test
@@ -73,8 +77,9 @@ public class SqliteVideosTest {
         };
         VideoMetadata metadata = new VideoMetadata("Betty", "I really hope you're on my side");
         int id = videos.addNew(session, metadata);
+        videoSegments.sendSegmentAmount(id, 5);
         Video video = videos.video(id);
-        Video expVideo = new Video(id, metadata, 0, (short) 2, Quality.QUALITY_1080, session.username());
+        Video expVideo = new Video(id, metadata, 5, (short) 2, Quality.QUALITY_1080, session.username());
         assertTrue(videosAreEqual(video, expVideo));
     }
 
