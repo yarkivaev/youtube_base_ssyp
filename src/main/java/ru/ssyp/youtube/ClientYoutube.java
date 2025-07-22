@@ -1,6 +1,7 @@
 package ru.ssyp.youtube;
 
 import ru.ssyp.youtube.users.Session;
+import ru.ssyp.youtube.video.Quality;
 import ru.ssyp.youtube.video.Video;
 import ru.ssyp.youtube.video.VideoMetadata;
 import ru.ssyp.youtube.video.Videos;
@@ -12,6 +13,8 @@ import java.io.*;
 import java.io.InputStream;
 import java.net.Socket;
 import java.io.DataInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClientYoutube implements Youtube {
 
@@ -27,49 +30,128 @@ public class ClientYoutube implements Youtube {
 
     @Override
     public Video videoInfo(int videoId) {
-        Video video = videos.video(videoId);
+
         try {
             OutputStream clientSocketStream = clientSocket.getOutputStream();
-            byte[] toWrite = new byte[a.length() + 1];
-            toWrite[0] = 0x00;
-            byte[] stringBytes = a.getBytes();
-            for (int i = 1; i < stringBytes.length; i++) {
-                toWrite[i] = stringBytes[i];
-            }
-            clientSocketStream.write(toWrite);
-            clientSocketStream.flush();
-            InputStream clientSocketInStream = clientSocket.getInputStream();
-            System.out.println(clientSocketInStream);
+            clientSocketStream.write(new byte[]{0x00});
+            clientSocketStream.write(IntCodec.intToByte(videoId));
+
+            int id;
+            String title;
+            String description;
+            int segmentAmount;
+            short segmentLength;
+            int priority;
+            String author;
+
+            byte[] intBuffer = new byte[4];
+            byte[] shortBuffer = new byte[1];
+
+            InputStream input = clientSocket.getInputStream();
+            input.read(intBuffer);
+            segmentAmount = IntCodec.byteToInt(intBuffer);
+            input.read(shortBuffer);
+            segmentLength = IntCodec.byteToInt_1(shortBuffer);
+            title = StringCodec.streamToString(input);
+            description = StringCodec.streamToString(input);
+            author = StringCodec.streamToString(input);
+            input.read(intBuffer);
+            priority = IntCodec.byteToInt(intBuffer);
+            input.read(intBuffer);
+            id = IntCodec.byteToInt(intBuffer);
+
+
+            return new Video(
+                    videoId,
+                    new VideoMetadata(
+                            title,
+                            description
+                    ),
+                    segmentAmount,
+                    segmentLength,
+                    Quality.fromPriority(priority),
+                    author
+            );
         } catch (IOException e) {
-            System.out.println("Капец, у тебя ошибка");
+            throw new RuntimeException(e);
         }
-        return clientSocketInStream;
     }
 
     @Override
     public Video[] videos() {
         try {
             OutputStream clientSocketStream = clientSocket.getOutputStream();
-            clientSocketStream.flush();
-            InputStream clientSocketInStream = clientSocket.getInputStream();
-            System.out.println(clientSocketInStream);
-        } catch (IOException e){
-            System.out.println("Капец, у тебя ошибка");
+            clientSocketStream.write(new byte[]{0x02});
+
+            int id;
+            String title;
+            String description;
+            int segmentAmount;
+            short segmentLength;
+            int priority;
+            String author;
+            short videoCount;
+            List<Video> videosList = new ArrayList<>();
+
+            byte[] intBuffer = new byte[4];
+            byte[] shortBuffer = new byte[1];
+            InputStream input = clientSocket.getInputStream();
+            input.read(shortBuffer);
+            videoCount = IntCodec.byteToInt_1(shortBuffer);
+
+            for (int i = 0; i<videoCount; i++) {
+
+                input.read(intBuffer);
+                segmentAmount = IntCodec.byteToInt(intBuffer);
+                input.read(shortBuffer);
+                segmentLength = IntCodec.byteToInt_1(shortBuffer);
+                title = StringCodec.streamToString(input);
+                description = StringCodec.streamToString(input);
+                author = StringCodec.streamToString(input);
+                input.read(intBuffer);
+                priority = IntCodec.byteToInt(intBuffer);
+                input.read(intBuffer);
+                id = IntCodec.byteToInt(intBuffer);
+                input.read(shortBuffer);
+                videoCount = IntCodec.byteToInt_1(shortBuffer);
+                videosList.add(new Video(
+                        id,
+                        new VideoMetadata(
+                                title,
+                                description
+                        ),
+                        segmentAmount,
+                        segmentLength,
+                        Quality.fromPriority(priority),
+                        author
+                ));
+            }
+            return videosList.toArray(new Video[0]);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return new clientSocketInStream[0];
+//        try {
+//            OutputStream clientSocketStream = clientSocket.getOutputStream();
+//            clientSocketStream.flush();
+//            InputStream clientSocketInStream = clientSocket.getInputStream();
+//            System.out.println(clientSocketInStream);
+//        } catch (IOException e) {
+//            System.out.println("Капец, у тебя ошибка");
+//        }
+//        return new clientSocketInStream[0];
     }
 
     @Override
-    public void upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException {
+    public void upload(Session user, VideoMetadata str, InputStream stream) throws IOException, InterruptedException {
         try {
             String title = str.title;
-            String description = str.discreaption;
+            String description = str.description;
             DataOutputStream dOut = new DataOutputStream(clientSocket.getOutputStream());
-            byte[] part = stream.readNBytes(1024^2);
+            byte[] part = stream.readNBytes(1024 ^ 2);
             while (part.toString().isEmpty()) {
                 dOut.writeUTF(user + title + description + new String(part) + part.length);
                 dOut.flush();
-                part = stream.readNBytes(1024^2);
+                part = stream.readNBytes(1024 ^ 2);
             }
         } catch (java.io.IOException e) {
             String i = "да как так то :(";
@@ -79,6 +161,18 @@ public class ClientYoutube implements Youtube {
 
     @Override
     public InputStream load(int videoId, int startSegment, int resolution) {
+        try {
+            OutputStream clientSocketStream = clientSocket.getOutputStream();
+            clientSocketStream.write(new byte[]{0x02});
+            clientSocketStream.write(new byte[videoId]);
+            clientSocketStream.write(new byte[startSegment]);
+            clientSocketStream.write(new byte[resolution]);
+
+            InputStream clientSocketInStream = clientSocket.getInputStream();
+            return clientSocketInStream;
+        } catch (IOException e){
+            System.out.println("OKAK");
+        }
         return null;
     }
 //
