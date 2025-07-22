@@ -1,11 +1,22 @@
 package ru.ssyp.youtube.server;
+import ru.ssyp.youtube.ScreamingYoutube;
 import ru.ssyp.youtube.ServerYoutube;
 import ru.ssyp.youtube.Youtube;
+import ru.ssyp.youtube.password.Password;
+import ru.ssyp.youtube.password.PbkdfPassword;
+import ru.ssyp.youtube.token.Token;
+import ru.ssyp.youtube.token.TokenGenRandomB64;
+import ru.ssyp.youtube.users.InvalidTokenException;
+import ru.ssyp.youtube.users.MemoryUsers;
+import ru.ssyp.youtube.users.Users;
+import ru.ssyp.youtube.video.VideoMetadata;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Random;
 
 public class Server {
     
@@ -13,22 +24,26 @@ public class Server {
 
     public final Youtube youtube;
 
-    public Server(ServerSocket serverSocket, Youtube youtube) {
+    public final Users users;
+
+    public Server(ServerSocket serverSocket, Youtube youtube, Users users) {
         this.serverSocket = serverSocket;
         this.youtube = youtube;
+        this.users = users;
     }
-    public void serve() throws IOException {
+    public void serve() throws IOException, InvalidTokenException {
         /*
          * todo Читаем в цикле данные, которые нам шлёт клиент. Клиент отправляет команды.
          * После каждой команды клиент отправляет флаг, о том, что команда отправленна.
          * Когда сервер видит флаг, он начинает парсить команду. Если парсинг успешный - вызывает
          * соответствующий метод интерфейса ServerYoutube
          */
-        Socket socket = serverSocket.accept();
-
 
         while (true) {
-            Command commandObj;
+            System.out.println("Wait for");
+            Socket socket = serverSocket.accept();
+            System.out.println("accepted");
+            Command commandObj = null;
             byte[] bytes = new byte[1];
             InputStream inputStream = socket.getInputStream();
             OutputStream outputStream = socket.getOutputStream();
@@ -42,7 +57,8 @@ public class Server {
                 System.out.println("______________");
                 InputStream rawVideoInfo = youtube.videoInfo(videoId).rawContent();
                 // rawVideoInfo -> outputStream
-                command = new GetVideoInfoCommand();
+                commandObj = new GetVideoInfoCommand(videoId ,youtube);
+                //outputStream.write( rawVideoInfo);
             }
             if (command == 0x01) {
                 System.out.println(command);
@@ -59,12 +75,14 @@ public class Server {
                 System.out.println(quality);
                 System.out.println(quality);
                 outputStream.write(quality);
+                commandObj = new GetVideoSegment(videoId , segmentId, quality , youtube);
                 System.out.println("______________");
             }
             if (command == 0x02) {
                 System.out.println("ok");
                 System.out.println("______________");
                 outputStream.write('0');
+                commandObj = new ListVideosCommand(youtube);
             }
             if (command == 0x03) {
                 System.out.println(command);
@@ -82,6 +100,7 @@ public class Server {
 
                 String password = read_string(inputStream , length_password);
                 System.out.println(password);
+                commandObj = new LoginCommand(username ,new PbkdfPassword(password) , users);
                 System.out.println("______________");
             }
             if (command == 0x04) {
@@ -99,6 +118,7 @@ public class Server {
 
                 String password = read_string(inputStream, length_password);
                 System.out.println(password);
+                commandObj = new CreateUserCommand(username , new PbkdfPassword(password) , users);
                 System.out.println("______________");
             }
             if (command == 0x05) {
@@ -130,9 +150,19 @@ public class Server {
                 inputStream.read(length_8B);
                 long length_8 = byteToInt_8(length_8B);
                 System.out.println(length_8);
+                commandObj = new UploadVideoCommand(
+                        users.getSession(new Token(token)),
+                        new VideoMetadata(title,description),
+                        length_8,
+                        inputStream,
+                        youtube
+                );
                 System.out.println("______________");
            }
             commandObj.act();
+            inputStream.close();
+            outputStream.close();
+            socket.close();
             // -> возврат результата клиенту
         }
 
@@ -176,10 +206,16 @@ public class Server {
     }
      //0 1 0 0 start = 1 length = 4
 
-     public static void main(String[] args) throws IOException {
+     public static void main(String[] args) throws IOException, InvalidTokenException {
         new Server(
                 new ServerSocket(8080),
-                new ServerYoutube()
+                new ScreamingYoutube(),
+                new MemoryUsers(
+                        new HashMap<>(),
+                        new HashMap<>(),
+                        new TokenGenRandomB64(20),
+                        new Random()
+                )
         ).serve();
     }
 }
