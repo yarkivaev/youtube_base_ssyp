@@ -2,10 +2,8 @@ package ru.ssyp.youtube.sqlite;
 
 import ru.ssyp.youtube.VideoSegments;
 import ru.ssyp.youtube.users.Session;
-import ru.ssyp.youtube.video.Quality;
-import ru.ssyp.youtube.video.Video;
-import ru.ssyp.youtube.video.VideoMetadata;
-import ru.ssyp.youtube.video.Videos;
+import ru.ssyp.youtube.video.*;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -73,9 +71,49 @@ public class SqliteVideos implements Videos {
             throw new RuntimeException("Video not found");
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new RuntimeException(e);
         }
-        return null;
+    }
+
+    @Override
+    public void editVideo(int videoId, EditVideo edit) {
+        Connection dbConn = db.conn();
+        if(edit.name.isPresent()){
+            var sql = """
+        UPDATE videos
+        SET title = ?
+        WHERE videoId = ?;
+        """;
+
+            try {
+                var pstmt = dbConn.prepareStatement(sql);
+                pstmt.setInt(2, videoId);
+                pstmt.setString(2, edit.name.get());
+                pstmt.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if(edit.description.isPresent()){
+            var sql = """
+        UPDATE videos
+        SET description = ?
+        WHERE videoId = ?;
+        """;
+
+            try {
+                var pstmt = dbConn.prepareStatement(sql);
+                pstmt.setInt(2, videoId);
+                pstmt.setString(2, edit.description.get());
+                pstmt.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if(edit.data.isPresent()){ //Call something??? to edit the data and change max quality???
+            System.err.print("Unimplemented part of the method: edit data");
+        }
+        return;
     }
 
     public void deleteVideo(int videoId){
@@ -88,7 +126,7 @@ public class SqliteVideos implements Videos {
             pstmt.setInt(1, videoId);
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 }
