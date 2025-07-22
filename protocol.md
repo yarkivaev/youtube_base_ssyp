@@ -3,7 +3,7 @@ string = [u32 - length in bytes] [utf-8 encoded characters]
 
 videoinfo = [u32 - channel id] [u32 - segment amount] [u8 - segment length] [u8 - max quality] [string - author name] [string - title] [string - description]
 
-channelinfo = [string - name] [string - description] [u32 - subscribers] [string - owner] [u32 - video amount]
+channelinfo = [string - name] [string - description] [u32 - subscribers] [u32 - owner] [u32 - video amount]
 
 ## пакеты
 пакет от клиента к серверу начинается с байта команды
@@ -71,9 +71,11 @@ channelinfo = [string - name] [string - description] [u32 - subscribers] [string
 
 если успешно: **S->C**: 0x00 [u32 - channel id]
 
-если название занято: **S->C**: 0x01
+если токен неправильный: **S->C**: 0x01
 
-если имя/описание не подходят: **S->C**: 0x02
+если название занято: **S->C**: 0x02
+
+если имя/описание не подходят: **S->C**: 0x03
 
 (например если имя или описание пустое)
 
@@ -82,12 +84,14 @@ channelinfo = [string - name] [string - description] [u32 - subscribers] [string
 
 если успешно: **S->C**: 0x00
 
-если нет такого канала или он принадлежит другому пользователю: **S->C**: 0x01
+если нет такого канала: **S->C**: 0x01
+
+если канал принадлежит другому пользователю: **S->C**: 0x02
 
 ### 0x0A - получить несколько видео канала
 **С->S**: 0x0A [u32 - channel id] [u32 - start video] [u32 - count]
 
-если успешно: **S->C**: 0x00 count*([u32 - video id] [videoinfo])
+если успешно: **S->C**: 0x00 count*([u32 - video id])
 
 если нет такого канала: **S->C**: 0x01
 

@@ -33,6 +33,13 @@ public class SqliteDatabase implements PreparedDatabase {
                     PRIMARY KEY (user_id, channel_id)
                 );
                 """);
+            statement.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS channels_videos (
+                    channel_id INTEGER NOT NULL REFERENCES channels(id),
+                    video_id INTEGER NOT NULL,
+                    PRIMARY KEY (user_id, channel_id)
+                );
+                """);
 
 
             initialized = true;

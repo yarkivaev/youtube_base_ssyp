@@ -1,7 +1,11 @@
 package ru.ssyp.youtube.sqlite;
 
+import ru.ssyp.youtube.IntCodec;
+import ru.ssyp.youtube.StringCodec;
 import ru.ssyp.youtube.channel.ChannelInfo;
 
+import java.io.*;
+import java.nio.ByteBuffer;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -52,5 +56,21 @@ public class SqliteChannelInfo implements ChannelInfo {
     @Override
     public int videoAmount() {
         return 0;
+    }
+
+    @Override
+    public InputStream rawContent() throws IOException, SQLException {
+        byte[] name = name().getBytes();
+        byte[] description = StringCodec.stringToStream(description());
+        byte[] subscribers = IntCodec.intToByte(subscribers());
+        byte[] owner = ByteBuffer.allocate(Integer.BYTES).putInt(owner()).array();
+        byte[] videoAmount = ByteBuffer.allocate(Integer.BYTES).putInt(videoAmount()).array();
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        for (byte[] b: new byte[][]{name, description, subscribers, owner, videoAmount}) {
+            byteArrayOutputStream.write(b);
+        }
+
+        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     }
 }
