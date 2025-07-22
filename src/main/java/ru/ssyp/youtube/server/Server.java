@@ -38,11 +38,13 @@ public class Server {
          * Когда сервер видит флаг, он начинает парсить команду. Если парсинг успешный - вызывает
          * соответствующий метод интерфейса ServerYoutube
          */
-
+        System.out.println("Wait for");
+        Socket socket = serverSocket.accept();
+        System.out.println("accepted");
         while (true) {
-            System.out.println("Wait for");
-            Socket socket = serverSocket.accept();
-            System.out.println("accepted");
+            //System.out.println("Wait for");
+            //Socket socket = serverSocket.accept();
+            //System.out.println("accepted");
             Command commandObj = null;
             byte[] bytes = new byte[1];
             InputStream inputStream = socket.getInputStream();
@@ -160,9 +162,9 @@ public class Server {
                 System.out.println("______________");
            }
             commandObj.act();
-            inputStream.close();
-            outputStream.close();
-            socket.close();
+            //inputStream.close();
+            //outputStream.close();
+            //socket.close();
             // -> возврат результата клиенту
         }
 
