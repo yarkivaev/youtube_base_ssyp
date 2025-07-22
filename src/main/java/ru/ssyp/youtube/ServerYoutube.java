@@ -13,7 +13,7 @@ public class ServerYoutube implements Youtube {
     }
 
     @Override
-    public void upload(User user, uploadSignature str, InputStream stream) {
+    public void upload(User user, UploadSignature str, InputStream stream) {
         // todo: Релизовать метод сохранения файла в хранилище.
         //       Сервер должен слушать порт 8080 и принимать входящие подключения
         //       Получив команду на сохранение файла, сервер должен получить файл
@@ -26,7 +26,6 @@ public class ServerYoutube implements Youtube {
 
 //    @Override
     public InputStream load(User user, String name) {
-//            this.socket;
         // TODO Очень похож на клиентский upload.
         throw new UnsupportedOperationException("Unimplemented method 'load'");
 }

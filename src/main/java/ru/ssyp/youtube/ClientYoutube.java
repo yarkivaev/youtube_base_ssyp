@@ -1,8 +1,11 @@
 package ru.ssyp.youtube;
 
-import java.io.*;
 import java.net.Socket;
 import java.io.InputStream;
+import java.io.DataOutputStream;
+import java.io.OutputStream;
+import java.io.IOException;
+import java.io.*;
 
 public class ClientYoutube implements Youtube {
     private final Socket clientSocket;
@@ -10,9 +13,8 @@ public class ClientYoutube implements Youtube {
     public ClientYoutube(Socket clientSocket) throws IOException {
         this.clientSocket = clientSocket;
     }
-
     //    @Override
-    public void upload(User user, uploadSignature str, InputStream stream) {
+    public void upload(User user, UploadSignature str, InputStream stream) {
         // todo: 1) Делаю запрос на подключение к серверу. Отправляю компанду на сохранение файла
         //       2) Отправляю файл на сервер по частям
         //       3) После того, как отправил файл, жду от сервера контрольную сумму.
@@ -23,7 +25,7 @@ public class ClientYoutube implements Youtube {
             DataOutputStream dOut = new DataOutputStream(clientSocket.getOutputStream());
             byte[] part = stream.readNBytes(1024^2);
             while (part.toString().isEmpty()) {
-                dOut.writeUTF(title + description + new String(part) + part.length);
+                dOut.writeUTF(user + title + description + new String(part) + part.length);
                 dOut.flush();
                 part = stream.readNBytes(1024^2);
             }
@@ -34,15 +36,14 @@ public class ClientYoutube implements Youtube {
     }
     public static void main(String[] args) {
         try {
-            while (true) {
+            while(true) {
                 String a = System.console().readLine();
                 byte[] bcnt = a.getBytes();
                 if (bcnt[0] == (byte) 0x00) ;
                 {
                     new ClientYoutube(new Socket("localhost", 8080)).getVideoInfo(a);
                 }
-                if (bcnt[0] == (byte) 0x01 || bcnt[0] == (byte) 0x02 || bcnt[0] == (byte) 0x03 || bcnt[0] == (byte) 0x04)
-                    ;
+                if (bcnt[0] == (byte) 0x01 || bcnt[0] == (byte) 0x02 || bcnt[0] == (byte) 0x03 || bcnt[0] == (byte) 0x04);
                 {
                     new ClientYoutube(new Socket("localhost", 8080)).videoList(a);
                 }
@@ -51,7 +52,7 @@ public class ClientYoutube implements Youtube {
                     new ClientYoutube(new Socket("localhost", 8080)).uploadVideo(a);
                 }
             }
-        } catch (IOException e){
+        } catch (IOException e) {
             System.out.println("Бывает");
         }
     }
@@ -91,11 +92,11 @@ public class ClientYoutube implements Youtube {
         try {
             String[] x = a.split(" ");
             User user = new User(x[0]);
-            uploadSignature str = new uploadSignature(x[1], x[2], x[3]);
+            UploadSignature str = new UploadSignature(x[1], x[2], x[3]);
             String title = str.title;
             String description = str.discreaption;
             String name = str.name;
-            new ClientYoutube(new Socket("localhost", 8080)).upload(user, new uploadSignature(title, description, name), new ByteArrayInputStream(x[5].getBytes()));
+            new ClientYoutube(new Socket("localhost", 8080)).upload(user, new UploadSignature(title, description, name), new ByteArrayInputStream(x[5].getBytes()));
             InputStream clientSocketInStream = clientSocket.getInputStream();
             System.out.println(clientSocketInStream);
             while (clientSocketInStream.readAllBytes()[0] != 0x01 &&
