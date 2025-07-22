@@ -1,62 +1,33 @@
 package ru.ssyp.youtube;
 
-import java.net.Socket;
-import java.io.InputStream;
+import ru.ssyp.youtube.users.Session;
+import ru.ssyp.youtube.video.Video;
+import ru.ssyp.youtube.video.VideoMetadata;
+import ru.ssyp.youtube.video.Videos;
+
 import java.io.DataOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.io.*;
+import java.io.InputStream;
+import java.net.Socket;
+import java.io.DataInputStream;
 
 public class ClientYoutube implements Youtube {
+
+
     private final Socket clientSocket;
 
-    public ClientYoutube(Socket clientSocket) throws IOException {
+    private final Videos videos;
+
+    public ClientYoutube(Socket clientSocket, Videos videos) throws IOException {
         this.clientSocket = clientSocket;
+        this.videos = videos;
     }
-    //    @Override
-    public void upload(User user, UploadSignature str, InputStream stream) {
-        // todo: 1) Делаю запрос на подключение к серверу. Отправляю компанду на сохранение файла
-        //       2) Отправляю файл на сервер по частям
-        //       3) После того, как отправил файл, жду от сервера контрольную сумму.
-        //       4) Получив контрольную сумму, сравниваю её с файлом. Отправляю ОК на сервер
-        try {
-            String title = str.title;
-            String description = str.discreaption;
-            DataOutputStream dOut = new DataOutputStream(clientSocket.getOutputStream());
-            byte[] part = stream.readNBytes(1024^2);
-            while (part.toString().isEmpty()) {
-                dOut.writeUTF(user + title + description + new String(part) + part.length);
-                dOut.flush();
-                part = stream.readNBytes(1024^2);
-            }
-        } catch (java.io.IOException e) {
-            String i = "да как так то :(";
-            System.out.println(i);
-        }
-    }
-    public static void main(String[] args) {
-        try {
-            while(true) {
-                String a = System.console().readLine();
-                byte[] bcnt = a.getBytes();
-                if (bcnt[0] == (byte) 0x00) ;
-                {
-                    new ClientYoutube(new Socket("localhost", 8080)).getVideoInfo(a);
-                }
-                if (bcnt[0] == (byte) 0x01 || bcnt[0] == (byte) 0x02 || bcnt[0] == (byte) 0x03 || bcnt[0] == (byte) 0x04);
-                {
-                    new ClientYoutube(new Socket("localhost", 8080)).videoList(a);
-                }
-                if (bcnt[0] == (byte) 0x05) ;
-                {
-                    new ClientYoutube(new Socket("localhost", 8080)).uploadVideo(a);
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("Бывает");
-        }
-    }
-    public void getVideoInfo(String a){
+
+    @Override
+    public Video videoInfo(int videoId) {
+        Video video = videos.video(videoId);
         try {
             OutputStream clientSocketStream = clientSocket.getOutputStream();
             byte[] toWrite = new byte[a.length() + 1];
@@ -72,42 +43,106 @@ public class ClientYoutube implements Youtube {
         } catch (IOException e) {
             System.out.println("Капец, у тебя ошибка");
         }
+        return clientSocketInStream;
     }
 
-    public void videoList(String a){
+    @Override
+    public Video[] videos() {
         try {
             OutputStream clientSocketStream = clientSocket.getOutputStream();
-            clientSocketStream.write(a.getBytes());
             clientSocketStream.flush();
             InputStream clientSocketInStream = clientSocket.getInputStream();
             System.out.println(clientSocketInStream);
         } catch (IOException e){
             System.out.println("Капец, у тебя ошибка");
         }
+        return new clientSocketInStream[0];
     }
 
-
-
-    public void uploadVideo(String a) {
+    @Override
+    public void upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException {
         try {
-            String[] x = a.split(" ");
-            User user = new User(x[0]);
-            UploadSignature str = new UploadSignature(x[1], x[2], x[3]);
             String title = str.title;
             String description = str.discreaption;
-            String name = str.name;
-            new ClientYoutube(new Socket("localhost", 8080)).upload(user, new UploadSignature(title, description, name), new ByteArrayInputStream(x[5].getBytes()));
-            InputStream clientSocketInStream = clientSocket.getInputStream();
-            System.out.println(clientSocketInStream);
-            while (clientSocketInStream.readAllBytes()[0] != 0x01 &&
-                    clientSocketInStream.readAllBytes()[0] != 0x02) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocketInStream));
-                reader.readLine();
-                String b = reader.toString();
-                System.out.println(b.getBytes());
+            DataOutputStream dOut = new DataOutputStream(clientSocket.getOutputStream());
+            byte[] part = stream.readNBytes(1024^2);
+            while (part.toString().isEmpty()) {
+                dOut.writeUTF(user + title + description + new String(part) + part.length);
+                dOut.flush();
+                part = stream.readNBytes(1024^2);
             }
-        } catch (IOException e) {
-            System.out.println("Капец, у тебя ошибка");
+        } catch (java.io.IOException e) {
+            String i = "да как так то :(";
+            System.out.println(i);
         }
     }
+
+    @Override
+    public InputStream load(int videoId, int startSegment, int resolution) {
+        return null;
+    }
+//
+//    @Override
+//    public InputStream load(int videoId, int startSegment, int resolution) {
+////        try {
+////            String title = str.title;
+////            String description = str.discreaption;
+////            DataOutputStream dOut = new DataOutputStream(clientSocket.getOutputStream());
+////            byte[] part = stream.readNBytes(1024^2);
+////            while (part.toString().isEmpty()) {
+////                dOut.writeUTF(user + title + description + new String(part) + part.length);
+////                dOut.flush();
+////                part = stream.readNBytes(1024^2);
+////            }
+////        } catch (java.io.IOException e) {
+////            String i = "да как так то :(";
+////            System.out.println(i);
+//        return null;
+////        }
+//    }
+////    public void main(String[] args) {
+////        try {
+////            while(true) {
+////                String a = System.console().readLine();
+////                byte[] bcnt = a.getBytes();
+////                if (bcnt[0] == (byte) 0x00) ;
+////                {
+////                    new ClientYoutube(new Socket("localhost", 8080)).getVideoInfo(a);
+////                }
+////                if (bcnt[0] == (byte) 0x01 || bcnt[0] == (byte) 0x02 || bcnt[0] == (byte) 0x03 || bcnt[0] == (byte) 0x04);
+////                {
+////                    new ClientYoutube(new Socket("localhost", 8080)).videoList(a);
+////                }
+////                if (bcnt[0] == (byte) 0x05) ;
+////                {
+////                    new ClientYoutube(new Socket("localhost", 8080)).uploadVideo(a);
+////                }
+////            }
+////        } catch (IOException e) {
+////            System.out.println("Бывает");
+////        }
+//        //public void uploadVideo(String a) {
+//        //    try {
+//        //        String[] x = a.split(" ");
+//        //        User user = new User(x[0]);
+//        //        UploadSignature str = new UploadSignature(x[1], x[2], x[3]);
+//        //        String title = str.title;
+//        //        String description = str.discreaption;
+//        //        String name = str.name;
+//        //        new ClientYoutube(new Socket("localhost", 8080)).upload(user, new UploadSignature(title, description, name), new ByteArrayInputStream(x[5].getBytes()));
+//        //        InputStream clientSocketInStream = clientSocket.getInputStream();
+//        //        System.out.println(clientSocketInStream);
+//        //        while (clientSocketInStream.readAllBytes()[0] != 0x01 &&
+//        //                clientSocketInStream.readAllBytes()[0] != 0x02) {
+//        //            BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocketInStream));
+//        //            reader.readLine();
+//        //            String b = reader.toString();
+//        //            System.out.println(b.getBytes());
+//        //        }
+//        //    } catch (IOException e) {
+//        //        System.out.println("Капец, у тебя ошибка");
+//        //    }
+//        //}
+//
+
 }
