@@ -17,7 +17,15 @@ public class SqliteDatabase implements PreparedDatabase {
             Statement statement = connection.createStatement();
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name STRING NOT NULL UNIQUE, passhash STRING NOT NULL);");
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS sessions (id INTEGER PRIMARY KEY, token STRING NOT NULL UNIQUE, user INTEGER NOT NULL, FOREIGN KEY (user) REFERENCES users (id));");
-
+            statement.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS videos (
+                    videoId INTEGER PRIMARY KEY AUTOINCREMENT,
+                    owner STRING NOT NULL,
+                    title STRING NOT NULL,
+                    description STRING,
+                    maxQuality INTEGER
+                );
+                """); // It's number, not amount because segment is a countable noun
             initialized = true;
         } catch (SQLException e) {
             throw new RuntimeException(e);
