@@ -19,11 +19,11 @@ public class SqliteDatabase implements PreparedDatabase {
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS sessions (id INTEGER PRIMARY KEY, token STRING NOT NULL UNIQUE, user INTEGER NOT NULL, FOREIGN KEY (user) REFERENCES users (id));");
             statement.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS videos (
-                    videoId INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     owner STRING NOT NULL,
                     title STRING NOT NULL,
                     description STRING,
-                    maxQuality INTEGER
+                    quality INTEGER
                 );
                 """); // It's number, not amount because segment is a countable noun
             initialized = true;

@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -67,16 +68,23 @@ public class SqliteVideosTest {
     @Test
     void videoEdit(){
         int vIDeo = videos.addNew(fakeSesion(), fakeMetadata());
-        EditVideo edit = new EditVideo(Optional.of("Test1"), Optional.of(""), Optional.of(InputStream.nullInputStream()));
+        videoSegments.sendSegmentAmount(vIDeo, 5);
+        System.out.println(videos.video(vIDeo).metadata.description);
+        String str = "";
+        Optional<String> opt = Optional.ofNullable(str).filter(Predicate.not(String::isEmpty));
+        EditVideo edit = new EditVideo(Optional.of("Test1"), opt, Optional.of(InputStream.nullInputStream()));
         videos.editVideo(vIDeo, edit);
         Video video = videos.video(vIDeo);
-        assertEquals(video.metadata.title, "Test1");
-        assertEquals(video.metadata.description, fakeMetadata().description);
+        System.out.println("At the end:");
+        System.out.println(video.metadata.description);
+        assertEquals("Test1", video.metadata.title);
+        assertEquals(fakeMetadata().description, video.metadata.description);
     }
 
     @Test
     void videoEditTitleAndDescription(){
         int vIDeo = videos.addNew(fakeSesion(), fakeMetadata());
+        videoSegments.sendSegmentAmount(vIDeo, 5);
         EditVideo edit = new EditVideo(Optional.of("Test1"), Optional.of("Next time you see your folks at dinner"), Optional.of(InputStream.nullInputStream()));
         videos.editVideo(vIDeo, edit);
         Video video = videos.video(vIDeo);
