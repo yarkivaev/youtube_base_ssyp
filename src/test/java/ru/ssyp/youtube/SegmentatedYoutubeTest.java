@@ -83,7 +83,7 @@ public class SegmentatedYoutubeTest {
         System.out.println(tempDirWithPrefix);
         Video video = this.youtube.upload(
                 new FakeUser(),
-                VideoMetadata.fakeMetadata(channel.channelInfo().id()),
+                VideoMetadata.fakeMetadata(name, channel.channelInfo().id()),
                 new FileInputStream(Paths.get("src", "test", "resources", name).toFile())
         );
         System.out.println(this.savedVideos);
@@ -99,6 +99,7 @@ public class SegmentatedYoutubeTest {
             assertNotEquals(i.fileSize(), 0);
         }
         assertEquals(savedVideos.size(), set.size());
+        savedVideos.clear();
     }
 
     @Test

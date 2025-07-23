@@ -54,6 +54,7 @@ public class SegmentatedYoutube implements Youtube {
         Video video = videos.addNew(user, metadata);
         Path tempDir = Files.createTempDirectory(String.valueOf(video.id));
         System.out.println(tempDir);
+        System.out.println(tempDir);
         Path local_file_path = Paths.get(tempDir.toString(), "output.mp4");
         Files.copy(stream, local_file_path);
 

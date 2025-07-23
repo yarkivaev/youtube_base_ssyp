@@ -15,9 +15,9 @@ public class VideoMetadata {
         this.channelId = channelId;
     }
 
-    public static VideoMetadata fakeMetadata(int channelId) {
+    public static VideoMetadata fakeMetadata(String title, int channelId) {
         return new VideoMetadata(
-                "Fake video",
+                title,
                 "Fake description",
                 channelId
         );

@@ -1,7 +1,11 @@
 package ru.ssyp.youtube.video;
 
+import ru.ssyp.youtube.IntCodec;
+import ru.ssyp.youtube.StringCodec;
 import ru.ssyp.youtube.ProtocolValue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Supplier;
@@ -37,13 +41,21 @@ public class Video implements ProtocolValue {
 
     @Override
     public InputStream rawContent() throws IOException {
-//        byte[] segmentAmount = ...;
-//        byte[] segmentLength = ...;
-//        byte[] maxQuality = this.maxQuality.rawContent().readAllBytes();
-//        byte[] authorName = ...;
-//
-//        return new ByteArrayInputStream();
-        return null;
+       byte[] segmentAmount = IntCodec.intToByte(this.segmentAmount());
+       byte[] segmentLength = new byte[]{((byte)(this.segmentLength & 0xFF))};
+       byte[] maxQuality = this.maxQuality.rawContent().readAllBytes();
+       byte[] authorName = StringCodec.stringToStream(this.author);
+       byte[] title = StringCodec.stringToStream(this.metadata.title);
+       byte[] description = StringCodec.stringToStream(this.metadata.description);
+
+       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+       outputStream.write(segmentAmount);
+       outputStream.write(segmentLength);
+       outputStream.write(maxQuality);
+       outputStream.write(authorName);
+       outputStream.write(title);
+       outputStream.write(description);
+        return new ByteArrayInputStream(outputStream.toByteArray());
     }
 
     public static Video fakeVideo() {
