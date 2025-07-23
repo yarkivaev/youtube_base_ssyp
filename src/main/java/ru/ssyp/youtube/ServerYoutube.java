@@ -1,5 +1,6 @@
 package ru.ssyp.youtube;
 
+import ru.ssyp.youtube.channel.InvalidChannelIdException;
 import ru.ssyp.youtube.users.Session;
 import ru.ssyp.youtube.video.Video;
 import ru.ssyp.youtube.video.VideoMetadata;
@@ -8,6 +9,9 @@ import ru.ssyp.youtube.video.Videos;
 import java.io.IOException;
 import java.io.InputStream;
 
+// TODO (maybe):
+//     move videoInfo and videos from this class into SegmentatedYoutube
+//     and remove this
 public class ServerYoutube implements Youtube {
     private final Youtube youtube;
     private final Videos videos;
@@ -28,9 +32,8 @@ public class ServerYoutube implements Youtube {
     }
 
     @Override
-    public void upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException {
-        int actualId = videos.addNew(user, metadata);
-        youtube.upload(user, metadata, stream);
+    public Video upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException, InvalidChannelIdException {
+        return youtube.upload(user, metadata, stream);
     }
 
     @Override

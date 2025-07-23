@@ -1,8 +1,10 @@
 package ru.ssyp.youtube;
 
+import ru.ssyp.youtube.channel.InvalidChannelIdException;
 import ru.ssyp.youtube.users.Session;
 import ru.ssyp.youtube.video.Video;
 import ru.ssyp.youtube.video.VideoMetadata;
+import ru.ssyp.youtube.video.Videos;
 
 import java.io.InputStream;
 import java.io.*;
@@ -21,19 +23,20 @@ public class SegmentatedYoutube implements Youtube {
 
     private final String[] resolutions;
 
-    private final Random random = new Random();
+    private final Videos videos;
 
 
-    public SegmentatedYoutube(Storage storage, Path ffmpegPath, VideoSegments videoSegments, String[] resolutions) {
+    public SegmentatedYoutube(Storage storage, Path ffmpegPath, VideoSegments videoSegments, String[] resolutions, Videos videos) {
         this.storage = storage;
         this.ffmpegPath = ffmpegPath;
         this.resolutions = resolutions;
         this.videoSegments = videoSegments;
+        this.videos = videos;
     }
 
 
-    public SegmentatedYoutube(Storage storage, Path ffmpegPath, VideoSegments videoSegments) {
-        this(storage, ffmpegPath, videoSegments, new String[]{"1080", "720", "360"});
+    public SegmentatedYoutube(Storage storage, Path ffmpegPath, VideoSegments videoSegments, Videos videos) {
+        this(storage, ffmpegPath, videoSegments, new String[]{"1080", "720", "360"}, videos);
     }
 
     @Override
@@ -47,9 +50,9 @@ public class SegmentatedYoutube implements Youtube {
     }
 
     @Override
-    public void upload(Session user, VideoMetadata video, InputStream stream) throws IOException, InterruptedException {
-        int videoId = random.nextInt(); // TODO
-        Path tempDir = Files.createTempDirectory(String.valueOf(videoId));
+    public Video upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException, InvalidChannelIdException {
+        Video video = videos.addNew(user, metadata);
+        Path tempDir = Files.createTempDirectory(String.valueOf(video.id));
         System.out.println(tempDir);
         Path local_file_path = Paths.get(tempDir.toString(), "output.mp4");
         Files.copy(stream, local_file_path);
@@ -78,13 +81,13 @@ public class SegmentatedYoutube implements Youtube {
         for (String resolution : resolutions) {
             for (int i = 0; i < segment_count; i++) {
                 InputStream is = Files.newInputStream(Paths.get(tempDir.toString(), "output_" + resolution + "_" + i + ".mp4"));
-                String segment_name = videoId + "_segment_" + resolution + "_" + Integer.toString(i);
+                String segment_name = video.id + "_segment_" + resolution + "_" + Integer.toString(i);
                 storage.upload(segment_name, is);
             }
         }
 
 
-        videoSegments.sendSegmentAmount(videoId, segment_count);
+        videoSegments.sendSegmentAmount(video.id, segment_count);
 
         for (File file : file_list) {
             if (!file.isDirectory()) {
@@ -93,6 +96,7 @@ public class SegmentatedYoutube implements Youtube {
         }
         Files.delete(tempDir);
 
+        return video;
     }
 
     @Override
