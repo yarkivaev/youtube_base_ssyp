@@ -90,7 +90,7 @@ public class Server {
                 System.out.println(command);
                 int length = read_int(inputStream);
                 System.out.println(length);
-                outputStream.write(length);
+//                outputStream.write(length);
 
                 String username = read_string(inputStream, length);
                 System.out.println(username);
@@ -98,7 +98,7 @@ public class Server {
 
                 int length_password = read_int(inputStream);
                 System.out.println(length_password);
-                outputStream.write(length_password);
+//                outputStream.write(length_password);
 
                 String password = read_string(inputStream , length_password);
                 System.out.println(password);
@@ -108,7 +108,7 @@ public class Server {
             if (command == 0x04) {
                 int length = read_int(inputStream);
                 System.out.println(length);
-                outputStream.write(length);
+//                outputStream.write(length);
 
                 String username = read_string(inputStream, length);
                 System.out.println(username);
@@ -116,7 +116,7 @@ public class Server {
 
                 int length_password = read_int(inputStream);
                 System.out.println(length_password);
-                outputStream.write(length_password);
+//                outputStream.write(length_password);
 
                 String password = read_string(inputStream, length_password);
                 System.out.println(password);
