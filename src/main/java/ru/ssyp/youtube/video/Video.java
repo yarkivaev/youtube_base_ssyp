@@ -41,6 +41,7 @@ public class Video implements ProtocolValue {
 
     @Override
     public InputStream rawContent() throws IOException {
+
        byte[] segmentAmount = IntCodec.intToByte(this.segmentAmount);
        byte[] segmentLength = new byte[]{((byte)(this.segmentLength & 0xFF))};
        byte[] maxQuality = this.maxQuality.rawContent().readAllBytes();
@@ -70,5 +71,10 @@ public class Video implements ProtocolValue {
                 Quality.QUALITY_1080,
                 "fake author"
         );
+    }
+
+    @Override
+    public String toString() {
+        return metadata.title;
     }
 }

@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SqliteVideos implements Videos {
 
@@ -78,6 +80,38 @@ public class SqliteVideos implements Videos {
         return null;
     }
 
+    @Override
+    public Video[] allVideos() {
+        try {
+            Statement stmt = db.conn().createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM videos;");
+
+            List<Video> videos = new ArrayList<>();
+
+            while (rs.next()) {
+                int videoId = rs.getInt("videoId");
+                String owner = rs.getString("owner");
+                String title = rs.getString("title");
+                String description = rs.getString("description");
+                int maxQuality = rs.getInt("maxQuality");
+
+                videos.add(new Video(
+                        videoId,
+                        new VideoMetadata(title, description),
+                        videoSegments.getSegmentAmount(videoId),
+                        (short) 2,
+                        Quality.fromPriority(maxQuality),
+                        owner
+                ));
+            }
+
+            return videos.toArray(new Video[0]);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public void deleteVideo(int videoId){
         var sql = """
         DELETE FROM videos WHERE "videoId" = ?

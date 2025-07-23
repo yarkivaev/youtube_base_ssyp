@@ -7,5 +7,8 @@ public interface Videos {
 
     Video video(int videoId);
 
+
+    Video[] allVideos();
     void deleteVideo(int id);
+
 }

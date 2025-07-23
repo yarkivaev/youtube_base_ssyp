@@ -20,7 +20,7 @@ public class IntCodec {
 
         return ((long) bytes[0] << 56) + ((long) bytes[1] << 48) + ((long) bytes[2] << 40) + ((long) bytes[3] << 32) + (bytes[4] << 24) + (bytes[5] << 16) + (bytes[6] << 8) + bytes[7];
     }
-    public static int byteToInt_1(byte[] bytes) {
+    public static short byteToInt_1(byte[] bytes) {
 
         return bytes[0];
     }
