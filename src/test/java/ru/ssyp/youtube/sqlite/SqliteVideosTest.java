@@ -56,6 +56,32 @@ public class SqliteVideosTest {
         int id2 = videos.addNew(session, metadata);
         assertNotEquals(id, id2);
     }
+    @Test
+    void testAllVideos(){
+        for (int i = 0; i<3; i++) {
+            Session session = new Session() {
+                @Override
+                public int userId() {
+                    return 4;
+                }
+
+                @Override
+                public String username() {
+                    return "Someone";
+                }
+
+                @Override
+                public Token token() {
+                    return new Token("pbkdfpbkdfpbkdf");
+                }
+            };
+            VideoMetadata metadata = new VideoMetadata("yandex.ru/games", "I really hope you're on my side");
+            int id = videos.addNew(session, metadata);
+            videoSegments.sendSegmentAmount(id, 5);
+        }
+
+        assertEquals(3, videos.allVideos().length);
+    }
 
     @Test
     void videoInfoFetch(){
