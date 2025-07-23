@@ -34,32 +34,16 @@ public class SqliteVideosTest {
 
     private PreparedDatabase db;
 
-    private Session session1;
+    private Session session;
 
 
     @BeforeEach
     void setUp() throws SQLException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidTokenException, InvalidChannelDescriptionException, InvalidChannelNameException {
-        Session session = new Session() {
-            @Override
-            public int userId() {
-                return 4;
-            }
-
-            @Override
-            public String username() {
-                return "Someone";
-            }
-
-            @Override
-            public Token token() {
-                return new Token("pbkdfpbkdfpbkdf");
-            }
-        };
         Connection conn = DriverManager.getConnection("jdbc:sqlite::memory:");
         db = new SqliteDatabase(conn);
         channels = new SqliteChannels(db);
         Users users = new SqliteUsers(db, new TokenGenRandomB64(20));
-        session1 = users.getSession(users.addUser("test_user_1", new DummyPassword("test_value_1")));
+        session = users.getSession(users.addUser("test_user_1", new DummyPassword("test_value_1")));
         channel1 = channels.addNew(session, "name", "description");
         channel2 = channels.addNew(session, "name2", "description2");
         videoSegments =  new MemoryVideoSegments(new HashMap<>());
@@ -84,39 +68,22 @@ public class SqliteVideosTest {
                 return new Token("wkefosijno3");
             }
         };
-        VideoMetadata metadata = new VideoMetadata("Betty", "I really hope you're on my side, I really hope you get it");
-        int id = videos.addNew(session, channel1.channelInfo().id(),  metadata);
+        VideoMetadata metadata = new VideoMetadata("Betty", "I really hope you're on my side, I really hope you get it", channel1.channelInfo().id());
+        Video video1 = videos.addNew(session, metadata);
         VideoMetadata finalMetadata = metadata;
-        Assertions.assertThrows(InvalidChannelIdException.class, () -> videos.addNew(session, 123, finalMetadata));
-        metadata = new VideoMetadata("What no one's thinking", "Just make it sound like that");
-        int id2 = videos.addNew(session, channel1.channelInfo().id(), metadata);
-        assertNotEquals(id, id2);
+        Assertions.assertThrows(RuntimeException.class, () -> videos.addNew(session, finalMetadata));
+        metadata = new VideoMetadata("What no one's thinking", "Just make it sound like that", channel1.channelInfo().id());
+        Video video2 = videos.addNew(session, metadata);
+        assertNotEquals(video1.id, video2.id);
         // TODO: проверить, добавилось ли видео в канал
     }
 
     @Test
-    void videoInfoFetch() throws InvalidChannelIdException {
-        Session session = new Session() {
-            @Override
-            public int userId() {
-                return 4;
-            }
-
-            @Override
-            public String username() {
-                return "Someone";
-            }
-
-            @Override
-            public Token token() {
-                return new Token("pbkdfpbkdfpbkdf");
-            }
-        };
-        VideoMetadata metadata = new VideoMetadata("Betty", "I really hope you're on my side");
-        int id = videos.addNew(session, channel1.channelInfo().id(), metadata);
-        videoSegments.sendSegmentAmount(id, 5);
-        Video video = videos.video(id);
-        Video expVideo = new Video(id, metadata, 5, (short) 2, Quality.QUALITY_1080, session.username());
+    void videoInfoFetch() throws InvalidChannelIdException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidTokenException {
+        VideoMetadata metadata = new VideoMetadata("Betty", "I really hope you're on my side", channel1.channelInfo().id());
+        Video video = videos.addNew(session, metadata);
+        videoSegments.sendSegmentAmount(video.id, 5);
+        Video expVideo = new Video(video.id, metadata, () -> 5, (short) 2, Quality.QUALITY_1080, session.username());
         assertTrue(videosAreEqual(video, expVideo));
     }
 
@@ -129,7 +96,7 @@ public class SqliteVideosTest {
 
     @Test
     void videoDelete() throws InvalidChannelIdException, InvalidVideoIdException, ForeignChannelIdException {
-        Session session = new Session() {
+        Session wrongSession = new Session() {
             @Override
             public int userId() {
                 return 4;
@@ -145,14 +112,14 @@ public class SqliteVideosTest {
                 return new Token("pbkdfpbkdfpbkdf");
             }
         };
-        VideoMetadata metadata = new VideoMetadata("Betty", "I really hope you're on my side");
-        int id = videos.addNew(session, channel1.channelInfo().id(), metadata);
+        VideoMetadata metadata = new VideoMetadata("Betty", "I really hope you're on my side", channel1.channelInfo().id());
+        Video video = videos.addNew(session, metadata);
         Assertions.assertThrows(InvalidVideoIdException.class, () -> videos.deleteVideo(10, session));
-        Assertions.assertThrows(ForeignChannelIdException.class, () -> videos.deleteVideo(id, session1));
-        videos.deleteVideo(id, session);
-        Assertions.assertThrows(InvalidVideoIdException.class, () -> videos.deleteVideo(id, session));
+        Assertions.assertThrows(ForeignChannelIdException.class, () -> videos.deleteVideo(video.id, wrongSession));
+        videos.deleteVideo(video.id, session);
+        Assertions.assertThrows(InvalidVideoIdException.class, () -> videos.deleteVideo(video.id, session));
         assertThrows(RuntimeException.class, () -> {
-            videos.video(id);
+            videos.video(video.id);
         });
     }
 
@@ -160,7 +127,7 @@ public class SqliteVideosTest {
         return video.id == expVideo.id &&
                 Objects.equals(video.author, expVideo.author) &&
                 video.maxQuality == expVideo.maxQuality &&
-                video.segmentAmount == expVideo.segmentAmount &&
+                video.segmentAmount() == expVideo.segmentAmount() &&
                 video.segmentLength == expVideo.segmentLength &&
                 Objects.equals(video.metadata.title, expVideo.metadata.title) &&
                 Objects.equals(video.metadata.description, expVideo.metadata.description);

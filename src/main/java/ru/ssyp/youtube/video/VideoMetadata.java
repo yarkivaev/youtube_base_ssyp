@@ -6,16 +6,20 @@ public class VideoMetadata {
 
     public final String description;
 
+    public final int channelId;
 
-    public VideoMetadata(String title, String description) {
+
+    public VideoMetadata(String title, String description, int channelId) {
         this.title = title;
         this.description = description;
+        this.channelId = channelId;
     }
 
-    public static VideoMetadata fakeMetadata() {
+    public static VideoMetadata fakeMetadata(int channelId) {
         return new VideoMetadata(
                 "Fake video",
-                "Fake description"
+                "Fake description",
+                channelId
         );
     }
 }

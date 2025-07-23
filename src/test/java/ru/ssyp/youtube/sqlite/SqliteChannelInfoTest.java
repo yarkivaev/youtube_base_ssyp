@@ -69,7 +69,7 @@ public class SqliteChannelInfoTest {
         channel.unsubscribe(session2.userId());
         Assertions.assertEquals(0, channelInfo.subscribers());
         Assertions.assertEquals(0, channel.channelInfo().videoAmount());
-        videos.addNew(session1, channelInfo.id(), new VideoMetadata("Betty", "I really hope you're on my side, I really hope you get it"));
+        videos.addNew(session1, new VideoMetadata("Betty", "I really hope you're on my side, I really hope you get it", channel.channelInfo().id()));
         Assertions.assertEquals(1, channel.channelInfo().videoAmount());
         videos.deleteVideo(1, session1);
         Assertions.assertEquals(0, channel.channelInfo().videoAmount());

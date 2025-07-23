@@ -1,5 +1,6 @@
 package ru.ssyp.youtube;
 
+import org.apache.commons.lang3.NotImplementedException;
 import ru.ssyp.youtube.users.Session;
 import ru.ssyp.youtube.video.Video;
 import ru.ssyp.youtube.video.VideoMetadata;
@@ -21,8 +22,8 @@ public class ServerYoutube implements Youtube {
     }
 
     @Override
-    public void upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException {
-
+    public Video upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException {
+        throw new NotImplementedException();
     }
 
     @Override

@@ -20,14 +20,21 @@ public class SqliteVideos implements Videos {
     }
 
     @Override
-    public int addNew(Session session, int channelId, VideoMetadata metadata) throws InvalidChannelIdException {
+    public Video addNew(Session session, VideoMetadata metadata) throws InvalidChannelIdException {
         Connection dbConn = db.conn();
         String sql = """
             INSERT INTO videos(owner, title, description, maxQuality) VALUES (?, ?, ?, ?);
             """;
         try{
-            PreparedStatement selectStatement = db.conn().prepareStatement("SELECT owner FROM channels WHERE id = ?;");
-            selectStatement.setInt(1, channelId);
+            PreparedStatement selectStatement = db.conn().prepareStatement(
+                """
+                SELECT u.name as owner
+                FROM channels c
+                JOIN users u on c.owner = u.id
+                WHERE c.id = ?;
+                """
+            );
+            selectStatement.setInt(1, metadata.channelId);
             ResultSet rs = selectStatement.executeQuery();
 
             if (!rs.next()) {
@@ -49,12 +56,19 @@ public class SqliteVideos implements Videos {
             int videoId = resultSet.getInt(1);
 
             PreparedStatement channelStatement = dbConn.prepareStatement("INSERT INTO channelsVideos(channelId, videoId) VALUES (?, ?);");
-            channelStatement.setInt(1, channelId);
+            channelStatement.setInt(1, metadata.channelId);
             channelStatement.setInt(2, videoId);
             channelStatement.executeUpdate();
 
             dbConn.commit();
-            return videoId;
+            return new Video(
+                    videoId,
+                    metadata,
+                    () -> videoSegments.getSegmentAmount(videoId),
+                    (short)2,
+                    Quality.fromPriority(3),
+                    rs.getString("owner")
+            );
 
         } catch (SQLException e){
             throw new RuntimeException(e);
@@ -75,12 +89,19 @@ public class SqliteVideos implements Videos {
             var pstmt = dbConn.prepareStatement(sql);
             pstmt.setInt(1, videoId);
             var rs = pstmt.executeQuery();
+
+            PreparedStatement getChannelId = dbConn.prepareStatement("SELECT channelId FROM channelsVideos WHERE videoId = ?;");
+            getChannelId.setInt(1, videoId);
+            ResultSet idrs = getChannelId.executeQuery();
+
+            int channelId = idrs.getInt(1);
+
             boolean first = true;
             while (rs.next()) {
                 Quality quality;
                 first = false;
-                VideoMetadata metadata = new VideoMetadata(rs.getString("title"), rs.getString("description"));
-                return new Video(videoId, metadata, segments, segmentLength, Quality.fromPriority(rs.getInt("maxQuality")), rs.getString("owner"));
+                VideoMetadata metadata = new VideoMetadata(rs.getString("title"), rs.getString("description"), channelId);
+                return new Video(videoId, metadata, () -> segments, segmentLength, Quality.fromPriority(rs.getInt("maxQuality")), rs.getString("owner"));
             }
             throw new RuntimeException("Video not found");
 

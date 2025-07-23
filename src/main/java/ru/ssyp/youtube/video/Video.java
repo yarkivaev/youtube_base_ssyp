@@ -4,13 +4,14 @@ import ru.ssyp.youtube.ProtocolValue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Supplier;
 
 public class Video implements ProtocolValue {
     public final int id;
 
     public final VideoMetadata metadata;
 
-    public final int segmentAmount;
+    public final Supplier<Integer> segmentAmount;
 
     public final short segmentLength;
 
@@ -21,7 +22,7 @@ public class Video implements ProtocolValue {
     public Video(
             int id,
             VideoMetadata metadata,
-            int segmentAmount,
+            Supplier<Integer> segmentAmount,
             short segmentLength,
             Quality maxQuality,
             String author
@@ -50,12 +51,19 @@ public class Video implements ProtocolValue {
                 42,
                 new VideoMetadata(
                         "Fake video",
-                "Fake description"
+                "Fake description",
+                        123
+
+
                 ),
-                10,
+                () -> 10,
                 (short) 5,
                 Quality.QUALITY_1080,
                 "fake author"
         );
+    }
+
+    public int segmentAmount(){
+        return this.segmentAmount.get();
     }
 }
