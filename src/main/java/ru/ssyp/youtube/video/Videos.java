@@ -1,7 +1,13 @@
 package ru.ssyp.youtube.video;
 
+import ru.ssyp.youtube.channel.ForeignChannelIdException;
+import ru.ssyp.youtube.channel.InvalidChannelIdException;
+import ru.ssyp.youtube.users.Session;
+
 public interface Videos {
-    int addNew(VideoMetadata metadata);
+    int addNew(Session session, int channelId, VideoMetadata metadata) throws InvalidChannelIdException;
 
     Video video(int videoId);
+
+    void deleteVideo(int id, Session session) throws InvalidVideoIdException, ForeignChannelIdException;
 }

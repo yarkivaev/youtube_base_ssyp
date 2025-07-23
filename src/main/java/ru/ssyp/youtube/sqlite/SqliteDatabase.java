@@ -33,15 +33,24 @@ public class SqliteDatabase implements PreparedDatabase {
                     PRIMARY KEY (user_id, channel_id)
                 );
                 """);
+
             statement.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS channels_videos (
-                    channel_id INTEGER NOT NULL REFERENCES channels(id),
-                    video_id INTEGER NOT NULL,
-                    PRIMARY KEY (user_id, channel_id)
+                CREATE TABLE IF NOT EXISTS videos (
+                    videoId INTEGER PRIMARY KEY AUTOINCREMENT,
+                    owner STRING NOT NULL,
+                    title STRING NOT NULL UNIQUE,
+                    description STRING,
+                    maxQuality INTEGER
                 );
                 """);
 
-
+            statement.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS channelsVideos (
+                    channelId INTEGER NOT NULL REFERENCES channels(id),
+                    videoId INTEGER NOT NULL REFERENCES videos(videoId) UNIQUE,
+                    PRIMARY KEY (channelId, videoId)
+                );
+                """);
             initialized = true;
         } catch (SQLException e) {
             throw new RuntimeException(e);

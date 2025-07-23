@@ -1,6 +1,7 @@
 package ru.ssyp.youtube.sqlite;
 
 import ru.ssyp.youtube.channel.*;
+import ru.ssyp.youtube.video.Video;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -71,5 +72,11 @@ public class SqliteChannel implements Channel {
         updateStatement.setInt(1, sqliteChannelInfo.subscribers() - 1);
         updateStatement.setInt(2, channelId);
         updateStatement.executeUpdate();
+    }
+
+    @Override
+    public Video[] videos(int startId, int amount) {
+        // Implement
+        return new Video[0];
     }
 }

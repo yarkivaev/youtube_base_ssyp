@@ -22,6 +22,11 @@ public class SqliteChannelInfo implements ChannelInfo {
     }
 
     @Override
+    public int id() {
+        return channelId;
+    }
+
+    @Override
     public String name() throws SQLException {
         PreparedStatement selectStatement = db.conn().prepareStatement("SELECT name FROM channels WHERE id = ?;");
         selectStatement.setInt(1, channelId);
@@ -54,8 +59,11 @@ public class SqliteChannelInfo implements ChannelInfo {
     }
 
     @Override
-    public int videoAmount() {
-        return 0;
+    public int videoAmount() throws SQLException {
+        PreparedStatement selectStatement = db.conn().prepareStatement("SELECT COUNT(videoId) FROM channelsVideos WHERE channelId = ?;");
+        selectStatement.setInt(1, channelId);
+        ResultSet rs = selectStatement.executeQuery();
+        return rs.getInt(1);
     }
 
     @Override

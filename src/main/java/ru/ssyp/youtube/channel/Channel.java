@@ -1,5 +1,7 @@
 package ru.ssyp.youtube.channel;
 
+import ru.ssyp.youtube.video.Video;
+
 import java.sql.SQLException;
 
 public interface Channel {
@@ -10,4 +12,6 @@ public interface Channel {
     void subscribe(int userId) throws SQLException, InvalidUserIdException, AlreadySubscribedException;
 
     void unsubscribe(int userId) throws SQLException, NotSubscribedException, InvalidUserIdException;
+
+    Video[] videos(int startId, int amount);
 }

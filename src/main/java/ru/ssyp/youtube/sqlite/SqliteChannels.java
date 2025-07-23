@@ -66,8 +66,12 @@ public class SqliteChannels implements Channels {
                 throw new ForeignChannelIdException();
             }
 
+            PreparedStatement deleteSubStatement = db.conn().prepareStatement("DELETE FROM subscribers WHERE id = ?;");
+            deleteSubStatement.setInt(1, channelId);
+            deleteSubStatement.executeUpdate();
+
             PreparedStatement deleteStatement = db.conn().prepareStatement("DELETE FROM channels WHERE id = ?;");
-            selectStatement.setInt(1, channelId);
+            deleteStatement.setInt(1, channelId);
             deleteStatement.executeUpdate();
         }
         catch (SQLException e) {
