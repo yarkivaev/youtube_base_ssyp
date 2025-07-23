@@ -135,18 +135,24 @@ public class ClientYoutube implements Youtube {
     @Override
     public void upload(Session user, VideoMetadata str, InputStream stream) throws IOException, InterruptedException {
         try {
+            OutputStream clientSocketStream = clientSocket.getOutputStream();
+            clientSocketStream.write(new byte[]{0x05});
             String title = str.title;
             String description = str.description;
-            DataOutputStream dOut = new DataOutputStream(clientSocket.getOutputStream());
             byte[] part = stream.readNBytes(1024 ^ 2);
             while (part.toString().isEmpty()) {
-                dOut.writeUTF(user + title + description + new String(part) + part.length);
-                dOut.flush();
+                clientSocketStream.write(user.toString().getBytes());
+                clientSocketStream.write(title.getBytes());
+                clientSocketStream.write(description.getBytes());
+                clientSocketStream.write((new String(part)).getBytes());
+                clientSocketStream.write(part.length);
+                clientSocketStream.flush();
                 part = stream.readNBytes(1024 ^ 2);
             }
         } catch (java.io.IOException e) {
             String i = "да как так то :(";
             System.out.println(i);
+            throw new RuntimeException(e);
         }
     }
 
@@ -163,8 +169,8 @@ public class ClientYoutube implements Youtube {
             return clientSocketInStream;
         } catch (IOException e) {
             System.out.println("OKAK");
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
 }

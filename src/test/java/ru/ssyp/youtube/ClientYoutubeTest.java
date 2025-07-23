@@ -86,6 +86,9 @@ public class ClientYoutubeTest {
     void testVideos() throws InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidTokenException {
         Token token = users.addUser("testName", new DummyPassword("password"));
         videos.addNew(users.getSession(token), new VideoMetadata("VideoTestTitle", "VideoTestDescription"));
+        videos.addNew(users.getSession(token), new VideoMetadata("VideoTestTitle", "VideoTestDescription"));
+        videos.addNew(users.getSession(token), new VideoMetadata("VideoTestTitle", "VideoTestDescription"));
         System.out.println(youtube.videos().length);
+        assert(youtube.videos().length==3);
     }
 }
