@@ -1,4 +1,8 @@
 ## типы
+u8, u16, u32, u64 - unsigned целые числа
+
+все числа в **big endian**
+
 string = [u32 - length in bytes] [utf-8 encoded characters]
 
 videoinfo = [u32 - segment amount] [u8 - segment length] [u8 - max quality] [string - author name] [string - title] [string - description]

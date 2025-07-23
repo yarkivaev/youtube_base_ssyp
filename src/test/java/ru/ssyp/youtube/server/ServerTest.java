@@ -65,7 +65,6 @@ public class ServerTest {
 
     @AfterEach
     void afterEach() throws IOException {
-        System.out.println("HELLLo");
         clientInput.close();
         clientOutput.close();
         clientSocket.close();
@@ -81,13 +80,12 @@ public class ServerTest {
     }
 
 
-
     @Test
     void getVideoSegmentTest() throws IOException, InterruptedException {
         int videoId = 42;
         int segmentId = 5;
         short quality = 3;
-        byte[] command = new byte[] {
+        byte[] command = new byte[]{
                 0x01,
                 0x00, 0x00, 0x00, 0x42,
                 0x00, 0x00, 0x00, 0x05,
@@ -99,7 +97,10 @@ public class ServerTest {
     }
 
     @Test
-    void ListVideosTest() throws IOException, InterruptedException {
+    void listVideosTest() throws IOException, InterruptedException {
+
+        clientOutput.write(new byte[]{0x02});
+        System.out.println(new BufferedReader(new InputStreamReader(clientInput)).read());
 
     }
 
@@ -108,9 +109,9 @@ public class ServerTest {
         String username = "Testuser777";
         Password password = new PbkdfPassword("a56.6.912ddv");
 
-        users.addUser(username , password);
+        users.addUser(username, password);
 
-        byte[] command = new byte[] {
+        byte[] command = new byte[]{
                 0x03,
                 0x00, 0x00, 0x00, 0x0b,
                 0x54, 0x65, 0x73, 0x74, 0x75, 0x73, 0x65, 0x72, 0x37, 0x37, 0x37,
@@ -128,8 +129,7 @@ public class ServerTest {
         Password password = new PbkdfPassword("a56.6.912ddv");
 
 
-
-        byte[] command = new byte[] {
+        byte[] command = new byte[]{
                 0x04,
                 0x00, 0x00, 0x00, 0x0b,
                 0x54, 0x65, 0x73, 0x74, 0x75, 0x73, 0x65, 0x72, 0x37, 0x37, 0x37,
@@ -143,11 +143,11 @@ public class ServerTest {
     @Test
     void UploadVideoTest() throws IOException, InterruptedException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException {
         Token token = new Token("1111184543");
-        VideoMetadata metadata = new VideoMetadata("duckroll","prokatitsa -- 5000rubley");
+        VideoMetadata metadata = new VideoMetadata("duckroll", "prokatitsa -- 5000rubley");
         long filesize = 56;
 
 
-        byte[] command = new byte[] {
+        byte[] command = new byte[]{
                 0x05,
                 0x00, 0x00, 0x00, 0x08,
                 0x39, 0x36, 0x33, 0x36, 0x31, 0x32, 0x33, 0x34,
