@@ -6,9 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import ru.ssyp.youtube.ScreamingYoutube;
+import ru.ssyp.youtube.password.Password;
+import ru.ssyp.youtube.password.PbkdfPassword;
+import ru.ssyp.youtube.token.Token;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
-import ru.ssyp.youtube.users.InvalidTokenException;
-import ru.ssyp.youtube.users.MemoryUsers;
+import ru.ssyp.youtube.users.*;
+import ru.ssyp.youtube.video.VideoMetadata;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -19,6 +22,8 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ServerTest {
+
+    private Users users;
 
     private ServerSocket serverSocket;
 
@@ -31,6 +36,12 @@ public class ServerTest {
     @BeforeEach
     void beforeEach() throws IOException, InvalidTokenException {
         serverSocket = new ServerSocket(8080);
+        users = new MemoryUsers(
+                new HashMap<>(),
+                new HashMap<>(),
+                new TokenGenRandomB64(20),
+                new Random()
+        );
         new Thread(
                 new Runnable() {
                     @Override
@@ -39,12 +50,7 @@ public class ServerTest {
                             new Server(
                                     serverSocket,
                                     new ScreamingYoutube(),
-                                    new MemoryUsers(
-                                            new HashMap<>(),
-                                            new HashMap<>(),
-                                            new TokenGenRandomB64(20),
-                                            new Random()
-                                    )
+                                    users
                             ).serve();
                         } catch (IOException | InvalidTokenException e) {
                             throw new RuntimeException(e);
@@ -91,4 +97,67 @@ public class ServerTest {
         Thread.sleep(500);
         System.out.println(new BufferedReader(new InputStreamReader(clientInput)).read());
     }
+
+    @Test
+    void ListVideosTest() throws IOException, InterruptedException {
+
+    }
+
+    @Test
+    void loginTest() throws IOException, InterruptedException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException {
+        String username = "Testuser777";
+        Password password = new PbkdfPassword("a56.6.912ddv");
+
+        users.addUser(username , password);
+
+        byte[] command = new byte[] {
+                0x03,
+                0x00, 0x00, 0x00, 0x0b,
+                0x54, 0x65, 0x73, 0x74, 0x75, 0x73, 0x65, 0x72, 0x37, 0x37, 0x37,
+                0x00, 0x00, 0x00, 0x0c,
+                0x61, 0x35, 0x36, 0x2e, 0x36, 0x2e, 0x39, 0x31, 0x32, 0x64, 0x64, 0x76
+        };
+        clientOutput.write(command);
+        Thread.sleep(500);
+//        System.out.println(new InputStreamReader(clientInput));
+    }
+
+    @Test
+    void CreateUserTest() throws IOException, InterruptedException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException {
+        String username = "Testuser777";
+        Password password = new PbkdfPassword("a56.6.912ddv");
+
+
+
+        byte[] command = new byte[] {
+                0x04,
+                0x00, 0x00, 0x00, 0x0b,
+                0x54, 0x65, 0x73, 0x74, 0x75, 0x73, 0x65, 0x72, 0x37, 0x37, 0x37,
+                0x00, 0x00, 0x00, 0x0c,
+                0x61, 0x35, 0x36, 0x2e, 0x36, 0x2e, 0x39, 0x31, 0x32, 0x64, 0x64, 0x76
+        };
+        clientOutput.write(command);
+        Thread.sleep(500);
+    }
+
+    @Test
+    void UploadVideoTest() throws IOException, InterruptedException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException {
+        Token token = new Token("1111184543");
+        VideoMetadata metadata = new VideoMetadata("duckroll","prokatitsa -- 5000rubley");
+        long filesize = 56;
+
+
+        byte[] command = new byte[] {
+                0x05,
+                0x00, 0x00, 0x00, 0x0b,
+                0x54, 0x65, 0x73, 0x74, 0x75, 0x73, 0x65, 0x72, 0x37, 0x37, 0x37,
+                0x00, 0x00, 0x00, 0x0c,
+                0x61, 0x35, 0x36, 0x2e, 0x36, 0x2e, 0x39, 0x31, 0x32, 0x64, 0x64, 0x76
+        };
+        clientOutput.write(command);
+        Thread.sleep(500);
+    }
 }
+
+
+
