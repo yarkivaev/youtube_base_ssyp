@@ -2,6 +2,7 @@ package ru.ssyp.youtube.server;
 
 import org.apache.commons.io.input.NullInputStream;
 import ru.ssyp.youtube.Youtube;
+import ru.ssyp.youtube.channel.InvalidChannelIdException;
 import ru.ssyp.youtube.users.Session;
 import ru.ssyp.youtube.video.VideoMetadata;
 
@@ -34,7 +35,7 @@ public class UploadVideoCommand implements Command {
         try {
             youtube.upload(this.session, this.metadata, this.file);
             return new NullInputStream();
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | InvalidChannelIdException e) {
             throw new RuntimeException(e);
         }
     }

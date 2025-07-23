@@ -5,7 +5,9 @@ u8, u16, u32, u64 - unsigned целые числа
 
 string = [u32 - length in bytes] [utf-8 encoded characters]
 
-videoinfo = [u32 - segment amount] [u8 - segment length] [u8 - max quality] [string - author name] [string - title] [string - description]
+videoinfo = [u32 - channel id] [u32 - segment amount] [u8 - segment length] [u8 - max quality] [string - author name] [string - title] [string - description]
+
+channelinfo = [string - name] [string - description] [u32 - subscribers] [u32 - owner] [u32 - video amount]
 
 ## пакеты
 пакет от клиента к серверу начинается с байта команды
@@ -46,7 +48,7 @@ videoinfo = [u32 - segment amount] [u8 - segment length] [u8 - max quality] [str
 (например если в нике спец. символы или пароль пустой)
 
 ### 0x05 - загрузить видео
-**С->S**: 0x05 [string - token] [string - title] [string - description] [u64 - file size] [file bytes]
+**С->S**: 0x05 [string - token] [u32 - channel id] [string - title] [string - description] [u64 - file size] [file bytes]
 
 пока обрабатывается: **S->C**: 0x00 [u8 - progress]
 
@@ -55,3 +57,62 @@ videoinfo = [u32 - segment amount] [u8 - segment length] [u8 - max quality] [str
 если ошибка: **S->C**: 0x01
 
 если успешно: **S->C**: 0x02 [u32 - video id]
+
+### 0x06 - удалить видео
+**С->S**: 0x0B [string - token] [u32 - video id]
+
+если успешно: **S->C**: 0x00
+
+если нет такого видео или он принадлежит другому пользователю: **S->C**: 0x01
+
+### 0x07 - получить информацию о канале
+**C->S**: 0x08 [u32 - channel id]
+
+**S->C**: [channelinfo] 
+
+### 0x08 - создать канал
+**C->S**: 0x09 [string - token] [string - name] [string - description]
+
+если успешно: **S->C**: 0x00 [u32 - channel id]
+
+если токен неправильный: **S->C**: 0x01
+
+если название занято: **S->C**: 0x02
+
+если имя/описание не подходят: **S->C**: 0x03
+
+(например если имя или описание пустое)
+
+### 0x09 - удалить канал
+**С->S**: 0x0B [string - token] [u32 - channel id]
+
+если успешно: **S->C**: 0x00
+
+если нет такого канала: **S->C**: 0x01
+
+если канал принадлежит другому пользователю: **S->C**: 0x02
+
+### 0x0A - получить несколько видео канала
+**С->S**: 0x0A [u32 - channel id] [u32 - start video] [u32 - count]
+
+если успешно: **S->C**: 0x00 count*([u32 - video id])
+
+если нет такого канала: **S->C**: 0x01
+
+если номер стартового видео или кол-во видео не подходят: **S->C**: 0x02
+
+### 0x0B - подписаться на канал
+**C->S**: 0x0C [string - token] [u32 - channel id]
+
+если успешно: **S->C**: 0x00
+
+если нет такого канала: **S->C**: 0x01
+
+### 0x0C - отписаться от канала
+**C->S**: 0x0C [string - token] [u32 - channel id]
+
+если успешно: **S->C**: 0x00
+
+если нет такого канала: **S->C**: 0x01
+
+пользователь не подписан на канал: **S->C**: 0x02
