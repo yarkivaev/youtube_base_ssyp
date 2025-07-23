@@ -133,21 +133,30 @@ public class ClientYoutube implements Youtube {
     }
 
     @Override
-    public void upload(Session user, VideoMetadata str, InputStream stream) throws IOException, InterruptedException {
+    public void upload(Session token, VideoMetadata str, InputStream stream) throws IOException, InterruptedException {
         try {
             OutputStream clientSocketStream = clientSocket.getOutputStream();
             clientSocketStream.write(new byte[]{0x05});
             String title = str.title;
             String description = str.description;
-            byte[] part = stream.readNBytes(1024 ^ 2);
+            File my_file_x = new File("C:\\Users\\programmer");
+            FileOutputStream my_file = new FileOutputStream("C:\\\\Users\\\\programmer");
+            byte[] part = stream.readNBytes(1024 * 1024);
+            my_file.write(part);
+            int part_length = 1024*1024;
+            clientSocketStream.write(StringCodec.stringToStream(token.username()));
+            clientSocketStream.write(StringCodec.stringToStream(title));
+            clientSocketStream.write(StringCodec.stringToStream(description));
+            clientSocketStream.write(StringCodec.stringToStream(part.toString()));
             while (part.toString().isEmpty()) {
-                clientSocketStream.write(StringCodec.stringToStream(user.toString()));
-                clientSocketStream.write(StringCodec.stringToStream(title));
-                clientSocketStream.write(StringCodec.stringToStream(description));
-                clientSocketStream.write(StringCodec.stringToStream(part.toString()));
-                clientSocketStream.write(part.length);
-                clientSocketStream.flush();
-                part = stream.readNBytes(1024 ^ 2);
+                part = stream.readNBytes(1024*1024);
+                my_file.write(part);
+                part_length+=1024*1024;
+            }
+            FileInputStream my_file_d = new FileInputStream("C:\\\\Users\\\\programmer");
+            clientSocketStream.write(part_length);
+            while (part.toString().isEmpty()) {
+                clientSocketStream.write(my_file_d.readNBytes(1024*1024));
             }
         } catch (java.io.IOException e) {
             String i = "да как так то :(";
