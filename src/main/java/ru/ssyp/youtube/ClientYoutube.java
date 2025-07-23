@@ -141,10 +141,10 @@ public class ClientYoutube implements Youtube {
             String description = str.description;
             byte[] part = stream.readNBytes(1024 ^ 2);
             while (part.toString().isEmpty()) {
-                clientSocketStream.write(user.toString().getBytes());
-                clientSocketStream.write(title.getBytes());
-                clientSocketStream.write(description.getBytes());
-                clientSocketStream.write((new String(part)).getBytes());
+                clientSocketStream.write(StringCodec.stringToStream(user.toString()));
+                clientSocketStream.write(StringCodec.stringToStream(title));
+                clientSocketStream.write(StringCodec.stringToStream(description));
+                clientSocketStream.write(StringCodec.stringToStream(part.toString()));
                 clientSocketStream.write(part.length);
                 clientSocketStream.flush();
                 part = stream.readNBytes(1024 ^ 2);
