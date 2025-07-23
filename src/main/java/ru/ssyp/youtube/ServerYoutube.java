@@ -28,9 +28,9 @@ public class ServerYoutube implements Youtube {
     }
 
     @Override
-    public void upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException {
-        youtube.upload(user, metadata, stream);
-        videos.addNew(user, metadata);
+    public void upload(int videoId, Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException {
+        int actualId = videos.addNew(user, metadata);
+        youtube.upload(actualId, user, metadata, stream);
     }
 
     @Override

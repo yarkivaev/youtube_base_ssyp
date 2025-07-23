@@ -15,7 +15,7 @@ public interface Youtube {
 
     Video[] videos();
 
-    void upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException;
+    void upload(int videoId, Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException;
 
     /*
      * Отправляет поток данных видео, начиная с startSec секунды

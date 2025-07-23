@@ -23,7 +23,7 @@ public class ScreamingYoutube implements Youtube{
     }
 
     @Override
-    public void upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException {
+    public void upload(int videoId, Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException {
         System.out.println("Upload has been called: {session=" + user + ",metadata=" + metadata + "}");
     }
 
