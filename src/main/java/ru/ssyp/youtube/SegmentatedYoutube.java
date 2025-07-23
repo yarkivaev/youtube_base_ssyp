@@ -47,8 +47,8 @@ public class SegmentatedYoutube implements Youtube {
     }
 
     @Override
-    public void upload(int videoId, Session user, VideoMetadata video, InputStream stream) throws IOException, InterruptedException {
-        // int videoId = random.nextInt();
+    public void upload(Session user, VideoMetadata video, InputStream stream) throws IOException, InterruptedException {
+        int videoId = random.nextInt(); // TODO
         Path tempDir = Files.createTempDirectory(String.valueOf(videoId));
         System.out.println(tempDir);
         Path local_file_path = Paths.get(tempDir.toString(), "output.mp4");

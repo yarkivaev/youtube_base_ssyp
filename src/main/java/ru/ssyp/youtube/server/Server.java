@@ -110,7 +110,7 @@ public class Server {
 
         Token token = users.addUser("test", new PbkdfPassword("123"));
         Session session = users.getSession(token);
-        youtube.upload(123, session, new VideoMetadata("test video", "hmm"), new FileInputStream(Paths.get("src", "test", "resources", "sample-15s.mp4").toFile()));
+        youtube.upload(session, new VideoMetadata("test video", "hmm"), new FileInputStream(Paths.get("src", "test", "resources", "sample-15s.mp4").toFile()));
 
         new Server(
             serverSocket,
