@@ -18,11 +18,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class Server {
-    
+
     public final ServerSocket serverSocket;
 
     public final Youtube youtube;
@@ -35,34 +34,56 @@ public class Server {
         this.users = users;
     }
     public void serve() throws IOException, InvalidTokenException {
-        Socket socket = serverSocket.accept();
         while (true) {
-            byte[] shortByteBuffer = new byte[1];
-            byte[] intByteBuffer = new byte[4];
-            InputStream inputStream = socket.getInputStream();
-            OutputStream outputStream = socket.getOutputStream();
-            inputStream.read(shortByteBuffer);
-            int intCommand = IntCodec.byteToInt_1(shortByteBuffer);
-            Command command = null;
-            if (intCommand == 0x01) {
-                inputStream.read(intByteBuffer);
-                int videoId = IntCodec.byteToInt(intByteBuffer);
+            new ClientThread(serverSocket.accept(), youtube).start();
+        }
+    }
 
-                inputStream.read(intByteBuffer);
-                int segmentId = IntCodec.byteToInt(intByteBuffer);
+    private static class ClientThread extends Thread {
+        private final Socket sock;
+        private final Youtube youtube;
+        private final InputStream inputStream;
+        private final OutputStream outputStream;
 
-                inputStream.read(shortByteBuffer);
-                int quality = IntCodec.byteToInt_1(shortByteBuffer);
+        public ClientThread(Socket sock, Youtube youtube) throws IOException {
+            this.sock = sock;
+            this.youtube = youtube;
+            inputStream = sock.getInputStream();
+            outputStream = sock.getOutputStream();
+        }
 
-                command = new GetVideoSegment(videoId , segmentId, quality, youtube);
-                byte[] videoSegment = command.act().readAllBytes();
-                outputStream.write(IntCodec.intToByte(videoSegment.length));
-                outputStream.write(videoSegment);
-            }
-            if (intCommand == 0x02) {
-                command = new ListVideosCommand(youtube);
-                outputStream.write(command.act().readAllBytes());
-            }
+        @Override
+        public void run() {
+            try {
+                while (true) {
+                    byte[] shortByteBuffer = new byte[1];
+                    byte[] intByteBuffer = new byte[4];
+
+                    inputStream.read(shortByteBuffer);
+                    int intCommand = IntCodec.byteToInt_1(shortByteBuffer);
+                    Command command;
+
+                    if (intCommand == 0x01) {
+                        inputStream.read(intByteBuffer);
+                        int videoId = IntCodec.byteToInt(intByteBuffer);
+
+                        inputStream.read(intByteBuffer);
+                        int segmentId = IntCodec.byteToInt(intByteBuffer);
+
+                        inputStream.read(shortByteBuffer);
+                        int quality = IntCodec.byteToInt_1(shortByteBuffer);
+
+                        command = new GetVideoSegment(videoId, segmentId, quality, youtube);
+                        byte[] videoSegment = command.act().readAllBytes();
+                        outputStream.write(IntCodec.intToByte(videoSegment.length));
+                        outputStream.write(videoSegment);
+                    }
+                    if (intCommand == 0x02) {
+                        command = new ListVideosCommand(youtube);
+                        outputStream.write(command.act().readAllBytes());
+                    }
+                }
+            } catch (IOException ignored) { }
         }
     }
 
