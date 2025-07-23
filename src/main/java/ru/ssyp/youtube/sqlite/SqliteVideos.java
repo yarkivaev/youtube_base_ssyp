@@ -121,12 +121,14 @@ public class SqliteVideos implements Videos {
     @Override
     public Video[] videos() {
         try {
+            // written by deepseek, pray it works
             Statement stmt = db.conn().createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM videos;");
+            ResultSet rs = stmt.executeQuery("SELECT v.*, cv.channelId FROM videos v LEFT JOIN channelsVideos cv ON v.videoId = cv.videoId;");
 
             List<Video> videos = new ArrayList<>();
 
             while (rs.next()) {
+                int channelId = rs.getInt("channelId");
                 int videoId = rs.getInt("videoId");
                 String owner = rs.getString("owner");
                 String title = rs.getString("title");
@@ -135,8 +137,8 @@ public class SqliteVideos implements Videos {
 
                 videos.add(new Video(
                         videoId,
-                        new VideoMetadata(title, description),
-                        videoSegments.getSegmentAmount(videoId),
+                        new VideoMetadata(title, description, channelId),
+                        () -> videoSegments.getSegmentAmount(videoId),
                         (short) 2,
                         Quality.fromPriority(maxQuality),
                         owner
