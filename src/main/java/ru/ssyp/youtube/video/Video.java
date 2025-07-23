@@ -1,7 +1,11 @@
 package ru.ssyp.youtube.video;
 
+import ru.ssyp.youtube.IntCodec;
+import ru.ssyp.youtube.StringCodec;
 import ru.ssyp.youtube.ProtocolValue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,31 +41,22 @@ public class Video implements ProtocolValue {
 
     @Override
     public InputStream rawContent() throws IOException {
-//        byte[] segmentAmount = ...;
-//        byte[] segmentLength = ...;
-//        byte[] maxQuality = this.maxQuality.rawContent().readAllBytes();
-//        byte[] authorName = ...;
 
+       byte[] segmentAmount = IntCodec.intToByte(this.segmentAmount);
+       byte[] segmentLength = new byte[]{((byte)(this.segmentLength & 0xFF))};
+       byte[] maxQuality = this.maxQuality.rawContent().readAllBytes();
+       byte[] authorName = StringCodec.stringToStream(this.author);
+       byte[] title = StringCodec.stringToStream(this.metadata.title);
+       byte[] description = StringCodec.stringToStream(this.metadata.description);
 
-//        try {
-//            OutputStream clientSocketStream = clientSocket.getOutputStream();
-//            byte[] toWrite = new byte[a.length() + 1];
-//            toWrite[0] = 0x00;
-//            byte[] stringBytes = a.getBytes();
-//            for (int i = 1; i < stringBytes.length; i++) {
-//                toWrite[i] = stringBytes[i];
-//            }
-//            clientSocketStream.write(toWrite);
-//            clientSocketStream.flush();
-//            InputStream clientSocketInStream = clientSocket.getInputStream();
-//            System.out.println(clientSocketInStream);
-//        } catch (IOException e) {
-//            System.out.println("Капец, у тебя ошибка");
-//        }
-//        return clientSocketInStream;
-//
-//        return new ByteArrayInputStream();
-        return null;
+       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+       outputStream.write(segmentAmount);
+       outputStream.write(segmentLength);
+       outputStream.write(maxQuality);
+       outputStream.write(authorName);
+       outputStream.write(title);
+       outputStream.write(description);
+        return new ByteArrayInputStream(outputStream.toByteArray());
     }
 
     public static Video fakeVideo() {
@@ -76,5 +71,10 @@ public class Video implements ProtocolValue {
                 Quality.QUALITY_1080,
                 "fake author"
         );
+    }
+
+    @Override
+    public String toString() {
+        return metadata.title;
     }
 }

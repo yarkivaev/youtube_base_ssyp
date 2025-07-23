@@ -130,15 +130,6 @@ public class ClientYoutube implements Youtube {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-//        try {
-//            OutputStream clientSocketStream = clientSocket.getOutputStream();
-//            clientSocketStream.flush();
-//            InputStream clientSocketInStream = clientSocket.getInputStream();
-//            System.out.println(clientSocketInStream);
-//        } catch (IOException e) {
-//            System.out.println("Капец, у тебя ошибка");
-//        }
-//        return new clientSocketInStream[0];
     }
 
     @Override
@@ -170,7 +161,7 @@ public class ClientYoutube implements Youtube {
 
             InputStream clientSocketInStream = clientSocket.getInputStream();
             return clientSocketInStream;
-        } catch (IOException e){
+        } catch (IOException e) {
             System.out.println("OKAK");
         }
         return null;
