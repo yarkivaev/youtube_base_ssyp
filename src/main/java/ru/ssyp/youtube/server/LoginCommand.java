@@ -8,11 +8,8 @@ import ru.ssyp.youtube.users.Users;
 import java.io.InputStream;
 
 public class LoginCommand implements Command{
-
     private final String username;
-
     private final Password password;
-
     private final Users users;
 
     public LoginCommand(String username, Password password, Users users) {
@@ -21,11 +18,10 @@ public class LoginCommand implements Command{
         this.users = users;
     }
 
-
     @Override
     public InputStream act() {
         try {
-            return users.login(this.username, this.password).rawContent();
+            return users.login(username, password).rawContent();
         } catch (InvalidUsernameException | InvalidPasswordException e) {
             throw new RuntimeException(e);
         }

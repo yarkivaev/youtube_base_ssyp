@@ -9,11 +9,8 @@ import ru.ssyp.youtube.users.Users;
 import java.io.InputStream;
 
 public class CreateUserCommand implements Command{
-
     private final String username;
-
     private final Password password;
-
     private final Users users;
 
     public CreateUserCommand(String username, Password password, Users users) {
@@ -21,7 +18,6 @@ public class CreateUserCommand implements Command{
         this.password = password;
         this.users = users;
     }
-
 
     @Override
     public InputStream act() {

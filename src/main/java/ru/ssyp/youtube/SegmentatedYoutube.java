@@ -6,25 +6,20 @@ import ru.ssyp.youtube.video.Video;
 import ru.ssyp.youtube.video.VideoMetadata;
 import ru.ssyp.youtube.video.Videos;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
 
 public class SegmentatedYoutube implements Youtube {
-
     private final Path ffmpegPath;
-
     private final Storage storage;
-
     private final VideoSegments videoSegments;
-
     private final String[] resolutions;
-
     private final Videos videos;
-
 
     public SegmentatedYoutube(Storage storage, Path ffmpegPath, VideoSegments videoSegments, String[] resolutions, Videos videos) {
         this.storage = storage;
@@ -33,7 +28,6 @@ public class SegmentatedYoutube implements Youtube {
         this.videoSegments = videoSegments;
         this.videos = videos;
     }
-
 
     public SegmentatedYoutube(Storage storage, Path ffmpegPath, VideoSegments videoSegments, Videos videos) {
         this(storage, ffmpegPath, videoSegments, new String[]{"1080", "720", "360"}, videos);
@@ -81,7 +75,7 @@ public class SegmentatedYoutube implements Youtube {
         for (String resolution : resolutions) {
             for (int i = 0; i < segment_count; i++) {
                 InputStream is = Files.newInputStream(Paths.get(tempDir.toString(), "output_" + resolution + "_" + i + ".mp4"));
-                String segment_name = video.id + "_segment_" + resolution + "_" + Integer.toString(i);
+                String segment_name = video.id + "_segment_" + resolution + "_" + i;
                 storage.upload(segment_name, is);
             }
         }

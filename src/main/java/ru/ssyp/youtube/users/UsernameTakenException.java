@@ -1,3 +1,4 @@
 package ru.ssyp.youtube.users;
 
-public class UsernameTakenException extends Exception {}
+public class UsernameTakenException extends Exception {
+}

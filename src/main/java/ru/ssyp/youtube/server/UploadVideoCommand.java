@@ -10,15 +10,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class UploadVideoCommand implements Command {
-
     private final Session session;
-
     private final VideoMetadata metadata;
-
     private final Long fileSize;
-
     private final InputStream file;
-
     private final Youtube youtube;
 
     public UploadVideoCommand(Session session, VideoMetadata metadata, Long fileSize, InputStream file, Youtube youtube) {
@@ -29,11 +24,10 @@ public class UploadVideoCommand implements Command {
         this.youtube = youtube;
     }
 
-
     @Override
     public InputStream act() {
         try {
-            youtube.upload(this.session, this.metadata, this.file);
+            youtube.upload(session, metadata, file);
             return new NullInputStream();
         } catch (IOException | InterruptedException | InvalidChannelIdException e) {
             throw new RuntimeException(e);

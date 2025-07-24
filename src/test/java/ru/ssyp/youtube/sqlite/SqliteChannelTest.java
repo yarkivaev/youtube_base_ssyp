@@ -1,6 +1,5 @@
 package ru.ssyp.youtube.sqlite;
 
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,21 +15,15 @@ import java.sql.SQLException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SqliteChannelTest {
-
     private Channels channels;
-
     private Channel channel;
-
     private Session session1;
     private Session session2;
-
-    private PreparedDatabase db;
-
 
     @BeforeEach
     void setUp() throws SQLException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidTokenException, InvalidChannelDescriptionException, InvalidChannelNameException, AlreadySubscribedException, InvalidUserIdException {
         Connection conn = DriverManager.getConnection("jdbc:sqlite::memory:");
-        db = new SqliteDatabase(conn);
+        PreparedDatabase db = new SqliteDatabase(conn);
         channels = new SqliteChannels(db);
         Users users = new SqliteUsers(db, new TokenGenRandomB64(20));
         session1 = users.getSession(users.addUser("test_user_1", new DummyPassword("test_value_1")));
@@ -53,7 +46,7 @@ public class SqliteChannelTest {
     }
 
     @Test
-    void alreadyNotSubscribedTest() throws AlreadySubscribedException, SQLException, InvalidUserIdException, NotSubscribedException {
+    void alreadyNotSubscribedTest() throws Exception {
         channel.subscribe(session1.userId());
         Assertions.assertTrue(channel.checkSubscription(session1.userId()));
         Assertions.assertThrows(NotSubscribedException.class, () -> channel.unsubscribe(session2.userId()));

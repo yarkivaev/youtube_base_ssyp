@@ -1,7 +1,5 @@
 package ru.ssyp.youtube.video;
 import org.junit.jupiter.api.Test;
-import ru.ssyp.youtube.video.Quality;
-import ru.ssyp.youtube.video.Video;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -10,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class VideoTest {
-
     @Test
     void rawVideo() throws IOException {
 //        Video video = new Video(1, "duckroll" , "prokatitsa -- 5000rubley", 4,(short) 6, Quality.QUALITY_1080 ,"rick");

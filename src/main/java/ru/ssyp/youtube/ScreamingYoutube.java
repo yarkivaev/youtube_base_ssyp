@@ -8,8 +8,7 @@ import ru.ssyp.youtube.video.VideoMetadata;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class ScreamingYoutube implements Youtube{
-
+public class ScreamingYoutube implements Youtube {
     @Override
     public Video videoInfo(int videoId) {
         System.out.println("VideoInfo has been called: {videoId=" + videoId + "}");

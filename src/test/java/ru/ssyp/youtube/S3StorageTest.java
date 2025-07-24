@@ -1,24 +1,22 @@
 package ru.ssyp.youtube;
 
 import io.minio.MinioClient;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class S3StorageTest {
-
     private static final MinioClient minioClient =
             MinioClient.builder()
                     .endpoint("http://localhost:9000")
@@ -53,7 +51,6 @@ public class S3StorageTest {
         }
         return size;
     }
-
 
     @AfterAll
     public static void afterAll() throws Exception {

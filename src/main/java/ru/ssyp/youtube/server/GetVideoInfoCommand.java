@@ -6,9 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class GetVideoInfoCommand implements Command {
-
     private final int videoId;
-
     private final Youtube youtube;
 
     public GetVideoInfoCommand(int videoId, Youtube youtube) {
@@ -19,7 +17,7 @@ public class GetVideoInfoCommand implements Command {
     @Override
     public InputStream act() {
         try {
-            return youtube.videoInfo(this.videoId).rawContent();
+            return youtube.videoInfo(videoId).rawContent();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

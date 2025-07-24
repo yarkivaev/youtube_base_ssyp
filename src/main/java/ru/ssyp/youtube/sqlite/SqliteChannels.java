@@ -8,12 +8,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SqliteChannels implements Channels {
-
     private final PreparedDatabase db;
 
-    public SqliteChannels(PreparedDatabase db){
+    public SqliteChannels(PreparedDatabase db) {
         this.db = db;
     }
+
     @Override
     public Channel channel(int channelId) {
         return new SqliteChannel(channelId, db, new SqliteChannelInfo(channelId, db));
@@ -43,8 +43,7 @@ public class SqliteChannels implements Channels {
             ResultSet rs = selectStatement.executeQuery();
             int channelId = rs.getInt("id");
             return new SqliteChannel(channelId, db, new SqliteChannelInfo(channelId, db));
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -73,8 +72,7 @@ public class SqliteChannels implements Channels {
             PreparedStatement deleteStatement = db.conn().prepareStatement("DELETE FROM channels WHERE id = ?;");
             deleteStatement.setInt(1, channelId);
             deleteStatement.executeUpdate();
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }

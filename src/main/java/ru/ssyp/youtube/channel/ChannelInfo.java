@@ -5,8 +5,8 @@ import ru.ssyp.youtube.ProtocolValue;
 import java.sql.SQLException;
 
 public interface ChannelInfo extends ProtocolValue {
-
     int id();
+
     String name() throws SQLException;
 
     String description() throws SQLException;
@@ -16,6 +16,4 @@ public interface ChannelInfo extends ProtocolValue {
     int owner() throws SQLException;
 
     int videoAmount() throws SQLException;
-
-
 }

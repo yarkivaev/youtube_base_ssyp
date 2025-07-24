@@ -12,11 +12,8 @@ import java.io.InputStream;
 import java.sql.SQLException;
 
 public class SubscribeChannelCommand implements Command {
-
     private final Session session;
-
     private final Channel channel;
-
 
     public SubscribeChannelCommand(Session session, Channel channel) {
         this.session = session;

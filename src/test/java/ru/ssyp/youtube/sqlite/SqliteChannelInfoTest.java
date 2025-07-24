@@ -9,7 +9,6 @@ import ru.ssyp.youtube.channel.*;
 import ru.ssyp.youtube.password.DummyPassword;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
 import ru.ssyp.youtube.users.*;
-import ru.ssyp.youtube.video.InvalidVideoIdException;
 import ru.ssyp.youtube.video.VideoMetadata;
 import ru.ssyp.youtube.video.Videos;
 
@@ -17,29 +16,17 @@ import java.sql.*;
 import java.util.HashMap;
 
 public class SqliteChannelInfoTest {
-    private Channels channels;
-
     private Channel channel;
-
     private Session session1;
-
     private Session session2;
-
     private ChannelInfo channelInfo;
-
-    private PreparedDatabase db;
-
     private Videos videos;
-
-    private VideoSegments videoSegments;
-
-
 
     @BeforeEach
     void setUp() throws SQLException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidTokenException, InvalidChannelDescriptionException, InvalidChannelNameException {
         Connection conn = DriverManager.getConnection("jdbc:sqlite::memory:");
-        db = new SqliteDatabase(conn);
-        channels = new SqliteChannels(db);
+        PreparedDatabase db = new SqliteDatabase(conn);
+        Channels channels = new SqliteChannels(db);
         Users users = new SqliteUsers(db, new TokenGenRandomB64(20));
         session1 = users.getSession(users.addUser("test_user_1", new DummyPassword("test_value_1")));
         session2 = users.getSession(users.addUser("test_user_2", new DummyPassword("test_value_2")));
@@ -49,12 +36,12 @@ public class SqliteChannelInfoTest {
         ResultSet rs = selectStatement.executeQuery();
         int channelId = rs.getInt("id");
         channelInfo = new SqliteChannelInfo(channelId, db);
-        videoSegments =  new MemoryVideoSegments(new HashMap<>());
+        VideoSegments videoSegments = new MemoryVideoSegments(new HashMap<>());
         videos = new SqliteVideos(new SqliteDatabase(conn), videoSegments);
     }
 
     @Test
-    void getInfoTest() throws SQLException, AlreadySubscribedException, InvalidUserIdException, NotSubscribedException, InvalidChannelIdException, InvalidVideoIdException, ForeignChannelIdException {
+    void getInfoTest() throws Exception {
         Assertions.assertEquals("test_description", channelInfo.description());
         Assertions.assertEquals("name", channelInfo.name());
         Assertions.assertEquals(0, channelInfo.subscribers());

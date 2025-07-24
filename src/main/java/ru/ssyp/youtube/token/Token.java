@@ -3,7 +3,6 @@ package ru.ssyp.youtube.token;
 import ru.ssyp.youtube.ProtocolValue;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 public class Token implements ProtocolValue {

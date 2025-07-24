@@ -1,11 +1,13 @@
 package ru.ssyp.youtube.sqlite;
 
-import ru.ssyp.youtube.users.*;
 import ru.ssyp.youtube.password.Password;
 import ru.ssyp.youtube.token.Token;
 import ru.ssyp.youtube.token.TokenGen;
+import ru.ssyp.youtube.users.*;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class SqliteUsers implements Users {
     private final PreparedDatabase db;

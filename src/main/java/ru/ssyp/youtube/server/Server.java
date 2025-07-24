@@ -22,9 +22,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-import static ru.ssyp.youtube.IntCodec.byteToInt;
-
-
 public class Server {
     public final ServerSocket serverSocket;
 
@@ -39,29 +36,19 @@ public class Server {
     }
 
     public void serve() throws IOException, InvalidTokenException {
-        /*
-         * todo Читаем в цикле данные, которые нам шлёт клиент. Клиент отправляет команды.
-         * После каждой команды клиент отправляет флаг, о том, что команда отправленна.
-         * Когда сервер видит флаг, он начинает парсить команду. Если парсинг успешный - вызывает
-         * соответствующий метод интерфейса ServerYoutube
-         */
         System.out.println("The server has started");
         while (true) {
             new ClientThread(serverSocket.accept(), youtube, users).start();
         }
-
     }
 
     private static class ClientThread extends Thread {
-        private final Socket sock;
         private final Youtube youtube;
         private final InputStream inputStream;
         private final OutputStream outputStream;
-
         private final Users users;
 
         public ClientThread(Socket sock, Youtube youtube, Users users) throws IOException {
-            this.sock = sock;
             this.youtube = youtube;
             inputStream = sock.getInputStream();
             outputStream = sock.getOutputStream();
@@ -88,10 +75,10 @@ public class Server {
                         outputStream.write(command.act().readAllBytes());
                     } else if (intCommand == 0x01) {
                         inputStream.read(intByteBuffer);
-                        int videoId = byteToInt(intByteBuffer);
+                        int videoId = IntCodec.byteToInt(intByteBuffer);
 
                         inputStream.read(intByteBuffer);
-                        int segmentId = byteToInt(intByteBuffer);
+                        int segmentId = IntCodec.byteToInt(intByteBuffer);
 
                         inputStream.read(shortByteBuffer);
                         int quality = IntCodec.byteToInt_1(shortByteBuffer);
@@ -139,8 +126,8 @@ public class Server {
                 throw new RuntimeException(e);
             } finally {
                 try {
-                    this.inputStream.close();
-                    this.outputStream.close();
+                    inputStream.close();
+                    outputStream.close();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -148,7 +135,7 @@ public class Server {
         }
     }
 
-    public static void main(String[] args) throws SQLException, IOException, InvalidTokenException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InterruptedException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidChannelDescriptionException, InvalidChannelNameException, InvalidChannelIdException {
+    public static void main(String[] args) throws SQLException, IOException, InvalidTokenException, InterruptedException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidChannelDescriptionException, InvalidChannelNameException, InvalidChannelIdException {
         System.out.println("Starting the server");
         ServerSocket serverSocket = new ServerSocket(8080);
         PreparedDatabase db = new SqliteDatabase(

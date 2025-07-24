@@ -3,21 +3,18 @@ package ru.ssyp.youtube;
 import io.minio.*;
 import io.minio.errors.*;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.io.InputStream;
-
 
 public class S3Storage implements Storage {
-
     private final MinioClient minioClient;
-
     private final String bucketName;
-
     private final Path downloadDestination;
 
     public S3Storage(MinioClient minioClient, String bucketName, Path downloadDestination) {
@@ -45,7 +42,8 @@ public class S3Storage implements Storage {
 
     @Override
     public void upload(String name, InputStream inputStream) {
-        ObjectWriteResponse objectWriteResponse = null;
+        ObjectWriteResponse objectWriteResponse;
+
         try {
             createBucketIfNotExists(minioClient);
             objectWriteResponse = minioClient.putObject(PutObjectArgs
@@ -66,6 +64,7 @@ public class S3Storage implements Storage {
                 | XmlParserException e) {
             throw new RuntimeException(e);
         }
+
         System.out.println("Файл успешно загружен: " + objectWriteResponse.object());
     }
 
@@ -94,13 +93,5 @@ public class S3Storage implements Storage {
                 | XmlParserException e) {
             throw new RuntimeException(e);
         }
-
     }
-
 }
-
-
-
-
-
-

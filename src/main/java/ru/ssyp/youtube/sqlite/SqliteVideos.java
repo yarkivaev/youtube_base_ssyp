@@ -4,21 +4,14 @@ import ru.ssyp.youtube.VideoSegments;
 import ru.ssyp.youtube.channel.ForeignChannelIdException;
 import ru.ssyp.youtube.channel.InvalidChannelIdException;
 import ru.ssyp.youtube.users.Session;
-
 import ru.ssyp.youtube.video.*;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.sql.*;
-
 public class SqliteVideos implements Videos {
-
     private final PreparedDatabase db;
-
     private final VideoSegments videoSegments;
 
     public SqliteVideos(PreparedDatabase db, VideoSegments videoSegments) {
@@ -30,16 +23,16 @@ public class SqliteVideos implements Videos {
     public Video addNew(Session session, VideoMetadata metadata) throws InvalidChannelIdException {
         Connection dbConn = db.conn();
         String sql = """
-            INSERT INTO videos(owner, title, description, maxQuality) VALUES (?, ?, ?, ?);
-            """;
-        try{
+                INSERT INTO videos(owner, title, description, maxQuality) VALUES (?, ?, ?, ?);
+                """;
+        try {
             PreparedStatement selectStatement = db.conn().prepareStatement(
-                """
-                SELECT u.name as owner
-                FROM channels c
-                JOIN users u on c.owner = u.id
-                WHERE c.id = ?;
-                """
+                    """
+                            SELECT u.name as owner
+                            FROM channels c
+                            JOIN users u on c.owner = u.id
+                            WHERE c.id = ?;
+                            """
             );
             selectStatement.setInt(1, metadata.channelId);
             ResultSet rs = selectStatement.executeQuery();
@@ -72,12 +65,12 @@ public class SqliteVideos implements Videos {
                     videoId,
                     metadata,
                     () -> videoSegments.getSegmentAmount(videoId),
-                    (short)2,
+                    (short) 2,
                     Quality.fromPriority(3),
                     rs.getString("owner")
             );
 
-        } catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -86,11 +79,10 @@ public class SqliteVideos implements Videos {
     public Video video(int videoId) {
         Connection dbConn = db.conn();
         int segments = videoSegments.getSegmentAmount(videoId);
-        //int segments = 0;
         short segmentLength = 2;
         var sql = """
-        SELECT owner, title, description, maxQuality FROM videos WHERE "videoId" = ?
-        """;
+                SELECT owner, title, description, maxQuality FROM videos WHERE "videoId" = ?
+                """;
 
         try {
             var pstmt = dbConn.prepareStatement(sql);
@@ -103,18 +95,16 @@ public class SqliteVideos implements Videos {
 
             int channelId = idrs.getInt(1);
 
-            boolean first = true;
             while (rs.next()) {
-                Quality quality;
-                first = false;
                 VideoMetadata metadata = new VideoMetadata(rs.getString("title"), rs.getString("description"), channelId);
                 return new Video(videoId, metadata, () -> segments, segmentLength, Quality.fromPriority(rs.getInt("maxQuality")), rs.getString("owner"));
             }
-            throw new RuntimeException("Video not found");
 
+            throw new RuntimeException("Video not found");
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
+
         return null;
     }
 
@@ -153,8 +143,8 @@ public class SqliteVideos implements Videos {
 
     public void deleteVideo(int videoId, Session session) throws InvalidVideoIdException, ForeignChannelIdException {
         var sql = """
-        DELETE FROM videos WHERE "videoId" = ?
-        """;
+                DELETE FROM videos WHERE "videoId" = ?
+                """;
         Connection dbConn = db.conn();
         try {
             PreparedStatement videoIdStatement = db.conn().prepareStatement("SELECT * FROM videos WHERE videoId = ?;");

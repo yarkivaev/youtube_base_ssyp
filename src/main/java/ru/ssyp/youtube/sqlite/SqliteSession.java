@@ -1,7 +1,7 @@
 package ru.ssyp.youtube.sqlite;
 
-import ru.ssyp.youtube.users.Session;
 import ru.ssyp.youtube.token.Token;
+import ru.ssyp.youtube.users.Session;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

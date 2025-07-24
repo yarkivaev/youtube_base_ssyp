@@ -1,6 +1,5 @@
 package ru.ssyp.youtube.sqlite;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.ssyp.youtube.MemoryVideoSegments;
@@ -21,32 +20,21 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SqliteVideosTest {
-
     private Videos videos;
-
     private VideoSegments videoSegments;
-
-    private Channels channels;
-
     private Channel channel1;
-
-    private Channel channel2;
-
-    private PreparedDatabase db;
-
     private Session session;
-
 
     @BeforeEach
     void setUp() throws SQLException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidTokenException, InvalidChannelDescriptionException, InvalidChannelNameException {
         Connection conn = DriverManager.getConnection("jdbc:sqlite::memory:");
-        db = new SqliteDatabase(conn);
-        channels = new SqliteChannels(db);
+        PreparedDatabase db = new SqliteDatabase(conn);
+        Channels channels = new SqliteChannels(db);
         Users users = new SqliteUsers(db, new TokenGenRandomB64(20));
         session = users.getSession(users.addUser("test_user_1", new DummyPassword("test_value_1")));
         channel1 = channels.addNew(session, "name", "description");
-        channel2 = channels.addNew(session, "name2", "description2");
-        videoSegments =  new MemoryVideoSegments(new HashMap<>());
+        channels.addNew(session, "name2", "description2");
+        videoSegments = new MemoryVideoSegments(new HashMap<>());
         videos = new SqliteVideos(new SqliteDatabase(conn), videoSegments);
     }
 
@@ -71,7 +59,7 @@ public class SqliteVideosTest {
         VideoMetadata metadata = new VideoMetadata("Betty", "I really hope you're on my side, I really hope you get it", channel1.channelInfo().id());
         Video video1 = videos.addNew(session, metadata);
         VideoMetadata finalMetadata = metadata;
-        Assertions.assertThrows(RuntimeException.class, () -> videos.addNew(session, finalMetadata));
+        assertThrows(RuntimeException.class, () -> videos.addNew(session, finalMetadata));
         metadata = new VideoMetadata("What no one's thinking", "Just make it sound like that", channel1.channelInfo().id());
         Video video2 = videos.addNew(session, metadata);
         assertNotEquals(video1.id, video2.id);
@@ -79,7 +67,7 @@ public class SqliteVideosTest {
     }
 
     @Test
-    void videoInfoFetch() throws InvalidChannelIdException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidTokenException {
+    void videoInfoFetch() throws Exception {
         VideoMetadata metadata = new VideoMetadata("Betty", "I really hope you're on my side", channel1.channelInfo().id());
         Video video = videos.addNew(session, metadata);
         videoSegments.sendSegmentAmount(video.id, 5);
@@ -88,14 +76,12 @@ public class SqliteVideosTest {
     }
 
     @Test
-    void invalidIndex(){
-        assertThrows(RuntimeException.class, () -> {
-            videos.video(1);
-        });
+    void invalidIndex() {
+        assertThrows(RuntimeException.class, () -> videos.video(1));
     }
 
     @Test
-    void videoDelete() throws InvalidChannelIdException, InvalidVideoIdException, ForeignChannelIdException {
+    void videoDelete() throws Exception {
         Session wrongSession = new Session() {
             @Override
             public int userId() {
@@ -114,10 +100,10 @@ public class SqliteVideosTest {
         };
         VideoMetadata metadata = new VideoMetadata("Betty", "I really hope you're on my side", channel1.channelInfo().id());
         Video video = videos.addNew(session, metadata);
-        Assertions.assertThrows(InvalidVideoIdException.class, () -> videos.deleteVideo(10, session));
-        Assertions.assertThrows(ForeignChannelIdException.class, () -> videos.deleteVideo(video.id, wrongSession));
+        assertThrows(InvalidVideoIdException.class, () -> videos.deleteVideo(10, session));
+        assertThrows(ForeignChannelIdException.class, () -> videos.deleteVideo(video.id, wrongSession));
         videos.deleteVideo(video.id, session);
-        Assertions.assertThrows(InvalidVideoIdException.class, () -> videos.deleteVideo(video.id, session));
+        assertThrows(InvalidVideoIdException.class, () -> videos.deleteVideo(video.id, session));
         assertThrows(RuntimeException.class, () -> {
             videos.video(video.id);
         });

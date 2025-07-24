@@ -7,14 +7,14 @@ import ru.ssyp.youtube.token.Token;
  * A user account and session manager.
  */
 public interface Users {
-    /** 
+    /**
      * Register new user.
      *
      * @param name Name is unique.
      * @return token
      * @throws InvalidUsernameException if username is empty or contains invalid chars.
      * @throws InvalidPasswordException if password is empty.
-     * @throws UsernameTakenException if username is already taken.
+     * @throws UsernameTakenException   if username is already taken.
      */
     Token addUser(String name, Password password) throws InvalidUsernameException, InvalidPasswordException, UsernameTakenException;
 
@@ -30,6 +30,7 @@ public interface Users {
 
     /**
      * Get session info by token.
+     *
      * @throws InvalidTokenException if token is invalid.
      */
     Session getSession(Token token) throws InvalidTokenException;

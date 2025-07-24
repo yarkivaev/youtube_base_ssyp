@@ -1,3 +1,4 @@
 package ru.ssyp.youtube.users;
 
-public class InvalidTokenException extends Exception {}
+public class InvalidTokenException extends Exception {
+}

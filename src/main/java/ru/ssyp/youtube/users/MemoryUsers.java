@@ -8,27 +8,11 @@ import java.util.Map;
 import java.util.Random;
 
 public class MemoryUsers implements Users {
-
-    class UserIdentiter {
-        public final String username;
-
-        public final int userId;
-
-
-        UserIdentiter(String username, int userId) {
-            this.username = username;
-            this.userId = userId;
-        }
-    }
+    record UserIdentiter(String username, int userId) { }
 
     private final Map<String, Password> users;
-
-
-
     private final Map<Token, UserIdentiter> sessions;
-
     private final TokenGen tokenGen;
-
     private final Random random;
 
     public MemoryUsers(
@@ -46,14 +30,14 @@ public class MemoryUsers implements Users {
     @Override
     public Token addUser(String name, Password password) throws InvalidUsernameException, InvalidPasswordException, UsernameTakenException {
         users.put(name, password);
-        return this.login(name, password);
+        return login(name, password);
     }
 
     @Override
     public Token login(String name, Password password) throws InvalidUsernameException, InvalidPasswordException {
-        if (users.keySet().contains(name)) {
+        if (users.containsKey(name)) {
             if (users.get(name).equals(password)) {
-                Token token =  tokenGen.token();
+                Token token = tokenGen.token();
                 sessions.put(token, new UserIdentiter(name, random.nextInt()));
                 return token;
             } else {
@@ -66,7 +50,7 @@ public class MemoryUsers implements Users {
 
     @Override
     public Session getSession(Token token) throws InvalidTokenException {
-        if (sessions.keySet().contains(token)) {
+        if (sessions.containsKey(token)) {
             UserIdentiter userIdentiter = sessions.get(token);
             return new Session() {
                 @Override

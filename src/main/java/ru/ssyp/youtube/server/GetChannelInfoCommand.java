@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.sql.SQLException;
 
 public class GetChannelInfoCommand implements Command {
-
     private final Channel channel;
 
     public GetChannelInfoCommand(Channel channel) {

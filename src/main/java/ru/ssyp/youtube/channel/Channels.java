@@ -2,8 +2,6 @@ package ru.ssyp.youtube.channel;
 
 import ru.ssyp.youtube.users.Session;
 
-import java.sql.SQLException;
-
 public interface Channels {
     Channel channel(int channelId);
 

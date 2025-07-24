@@ -8,5 +8,3 @@ public interface Storage {
 
     InputStream download(String name);
 }
-
-

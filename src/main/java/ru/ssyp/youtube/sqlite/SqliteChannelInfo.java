@@ -4,16 +4,17 @@ import ru.ssyp.youtube.IntCodec;
 import ru.ssyp.youtube.StringCodec;
 import ru.ssyp.youtube.channel.ChannelInfo;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SqliteChannelInfo implements ChannelInfo {
-
     private final int channelId;
-
     private final PreparedDatabase db;
 
     public SqliteChannelInfo(int channelId, PreparedDatabase db) {
@@ -75,7 +76,7 @@ public class SqliteChannelInfo implements ChannelInfo {
         byte[] videoAmount = ByteBuffer.allocate(Integer.BYTES).putInt(videoAmount()).array();
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        for (byte[] b: new byte[][]{name, description, subscribers, owner, videoAmount}) {
+        for (byte[] b : new byte[][]{name, description, subscribers, owner, videoAmount}) {
             byteArrayOutputStream.write(b);
         }
 

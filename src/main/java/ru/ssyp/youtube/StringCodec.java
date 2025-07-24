@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class StringCodec {
-
     public static String streamToString(InputStream stream) throws IOException {
         byte[] intBuffer = new byte[4];
         stream.read(intBuffer);
@@ -19,12 +18,8 @@ public class StringCodec {
         int stringSize = stringBytes.length;
         byte[] stringSizeB = IntCodec.intToByte(stringSize);
         byte[] bytes = new byte[stringSize + 4];
-        for (int i = 0; i < 4; i++) {
-            bytes[i] = stringSizeB[i];
-        }
-        for (int i = 4; i < stringSize + 4; i ++) {
-            bytes[i] = stringBytes[i - 4];
-        }
+        System.arraycopy(stringSizeB, 0, bytes, 0, 4);
+        System.arraycopy(stringBytes, 0, bytes, 4, stringSize + 4 - 4);
         return bytes;
     }
 }

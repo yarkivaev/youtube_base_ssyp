@@ -1,9 +1,5 @@
 package ru.ssyp.youtube.password;
 
-/**
- * DO NOT USE!!!
- * Terribly insecure, for testing other components only.
- */
 public class DummyPassword implements Password {
     private final String value;
 

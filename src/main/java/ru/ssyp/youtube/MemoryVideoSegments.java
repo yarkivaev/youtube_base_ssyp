@@ -1,10 +1,8 @@
 package ru.ssyp.youtube;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class MemoryVideoSegments implements VideoSegments {
-
     Map<Integer, Integer> videoSegmentAmount;
 
     public MemoryVideoSegments(Map<Integer, Integer> videoSegmentAmount) {
@@ -20,7 +18,4 @@ public class MemoryVideoSegments implements VideoSegments {
     public int getSegmentAmount(int videoId) {
         return videoSegmentAmount.get(videoId);
     }
-
-
-
 }

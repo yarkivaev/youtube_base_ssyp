@@ -7,15 +7,14 @@ import java.io.InputStream;
 
 public enum Quality implements ProtocolValue {
     QUALITY_1080(1080, 3),
-    QUALITY_720(720,2),
+    QUALITY_720(720, 2),
     QUALITY_360(360, 1);
 
     public final int resolution;
-
     public final int priority;
 
     Quality(int number, int priority) {
-        this.resolution = number;
+        resolution = number;
         this.priority = priority;
     }
 
@@ -30,6 +29,6 @@ public enum Quality implements ProtocolValue {
 
     @Override
     public InputStream rawContent() {
-        return new ByteArrayInputStream(new byte[] {(byte)priority});
+        return new ByteArrayInputStream(new byte[]{(byte) priority});
     }
 }

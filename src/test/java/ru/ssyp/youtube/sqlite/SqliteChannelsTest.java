@@ -11,15 +11,10 @@ import ru.ssyp.youtube.users.*;
 import java.sql.*;
 
 public class SqliteChannelsTest {
-
     private Channels channels;
-
     private Session session1;
-
     private Session session2;
-
     private PreparedDatabase db;
-
 
     @BeforeEach
     void setUp() throws SQLException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidTokenException {
@@ -32,7 +27,7 @@ public class SqliteChannelsTest {
     }
 
     @Test
-    void addNewTest(){
+    void addNewTest() {
         Assertions.assertThrows(InvalidChannelNameException.class, () -> channels.addNew(session1, "na me", "description"));
         Assertions.assertThrows(InvalidChannelNameException.class, () -> channels.addNew(session1, "имя", "description"));
         Assertions.assertThrows(InvalidChannelNameException.class, () -> channels.addNew(session1, "name!", "description"));
@@ -40,7 +35,7 @@ public class SqliteChannelsTest {
     }
 
     @Test
-    void removeChannelTest() throws InvalidChannelDescriptionException, InvalidChannelNameException, SQLException, ForeignChannelIdException, InvalidChannelIdException {
+    void removeChannelTest() throws Exception {
         Assertions.assertThrows(InvalidChannelIdException.class, () -> channels.removeChannel(session1, 123));
         channels.addNew(session1, "name", "description");
         PreparedStatement selectStatement = db.conn().prepareStatement("SELECT id FROM channels WHERE owner = ?;");
@@ -49,5 +44,4 @@ public class SqliteChannelsTest {
         int channelId = rs.getInt("id");
         Assertions.assertThrows(ForeignChannelIdException.class, () -> channels.removeChannel(session2, channelId));
     }
-
 }

@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class ClientYoutube implements Youtube {
-
     @Override
     public Video videoInfo(int videoId) {
         return null;
@@ -29,6 +28,4 @@ public class ClientYoutube implements Youtube {
     public InputStream load(int videoId, int startSegment, int resolution) {
         return null;
     }
-
-
 }

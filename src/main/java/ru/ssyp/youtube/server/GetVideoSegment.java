@@ -6,13 +6,9 @@ import ru.ssyp.youtube.video.Quality;
 import java.io.InputStream;
 
 public class GetVideoSegment implements Command {
-
     private final int videoId;
-
     private final int segmentId;
-
     private final Quality quality;
-
     private final Youtube youtube;
 
     public GetVideoSegment(int videoId, int segmentId, Quality quality, Youtube youtube) {

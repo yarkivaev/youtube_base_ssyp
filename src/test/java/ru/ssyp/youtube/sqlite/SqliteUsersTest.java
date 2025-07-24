@@ -3,12 +3,12 @@ package ru.ssyp.youtube.sqlite;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.ssyp.youtube.users.*;
-import ru.ssyp.youtube.password.Password;
 import ru.ssyp.youtube.password.DummyPassword;
+import ru.ssyp.youtube.password.Password;
 import ru.ssyp.youtube.token.Token;
 import ru.ssyp.youtube.token.TokenGen;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
+import ru.ssyp.youtube.users.*;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -39,7 +39,7 @@ public class SqliteUsersTest {
     }
 
     @Test
-    void testRegister() throws InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidTokenException {
+    void testRegister() throws Exception {
         Password pass = new DummyPassword("1");
         Password wrong = new DummyPassword("wrongpassword");
 
