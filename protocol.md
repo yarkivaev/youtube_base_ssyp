@@ -59,19 +59,19 @@ channelinfo = [string - name] [string - description] [u32 - subscribers] [u32 - 
 если успешно: **S->C**: 0x02 [u32 - video id]
 
 ### 0x06 - удалить видео
-**С->S**: 0x0B [string - token] [u32 - video id]
+**С->S**: 0x06 [string - token] [u32 - video id]
 
 если успешно: **S->C**: 0x00
 
 если нет такого видео или он принадлежит другому пользователю: **S->C**: 0x01
 
 ### 0x07 - получить информацию о канале
-**C->S**: 0x08 [u32 - channel id]
+**C->S**: 0x07 [u32 - channel id]
 
 **S->C**: [channelinfo] 
 
 ### 0x08 - создать канал
-**C->S**: 0x09 [string - token] [string - name] [string - description]
+**C->S**: 0x08 [string - token] [string - name] [string - description]
 
 если успешно: **S->C**: 0x00 [u32 - channel id]
 
@@ -84,7 +84,7 @@ channelinfo = [string - name] [string - description] [u32 - subscribers] [u32 - 
 (например если имя или описание пустое)
 
 ### 0x09 - удалить канал
-**С->S**: 0x0B [string - token] [u32 - channel id]
+**С->S**: 0x09 [string - token] [u32 - channel id]
 
 если успешно: **S->C**: 0x00
 
@@ -102,7 +102,7 @@ channelinfo = [string - name] [string - description] [u32 - subscribers] [u32 - 
 если номер стартового видео или кол-во видео не подходят: **S->C**: 0x02
 
 ### 0x0B - подписаться на канал
-**C->S**: 0x0C [string - token] [u32 - channel id]
+**C->S**: 0x0B [string - token] [u32 - channel id]
 
 если успешно: **S->C**: 0x00
 
