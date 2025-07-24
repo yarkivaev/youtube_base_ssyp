@@ -13,7 +13,7 @@ public class StringCodec {
         return new String(stringBytes);
     }
 
-    public static byte[] stringToStream(String str) throws IOException {
+    public static byte[] stringToStream(String str) {
         byte[] stringBytes = str.getBytes();
         int stringSize = stringBytes.length;
         byte[] stringSizeB = IntCodec.intToByte(stringSize);
