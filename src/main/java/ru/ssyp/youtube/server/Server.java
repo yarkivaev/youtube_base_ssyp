@@ -62,7 +62,13 @@ public class Server {
                     int intCommand = IntCodec.byteToInt_1(shortByteBuffer);
                     Command command;
 
-                    if (intCommand == 0x01) {
+                    if (intCommand == 0x00) {
+                        inputStream.read(intByteBuffer);
+                        int videoId = IntCodec.byteToInt(intByteBuffer);
+
+                        command = new GetVideoInfoCommand(videoId, youtube);
+                        outputStream.write(command.act().readAllBytes());
+                    } else if (intCommand == 0x01) {
                         inputStream.read(intByteBuffer);
                         int videoId = IntCodec.byteToInt(intByteBuffer);
 
@@ -76,13 +82,17 @@ public class Server {
                         byte[] videoSegment = command.act().readAllBytes();
                         outputStream.write(IntCodec.intToByte(videoSegment.length));
                         outputStream.write(videoSegment);
-                    }
-                    if (intCommand == 0x02) {
+                    } else if (intCommand == 0x02) {
                         command = new ListVideosCommand(youtube);
                         outputStream.write(command.act().readAllBytes());
+                    } else {
+                        // защита от подлянок
+                        throw new RuntimeException("invalid command received");
                     }
                 }
-            } catch (IOException ignored) { }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
