@@ -21,6 +21,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+import static ru.ssyp.youtube.IntCodec.byteToInt;
+
 
 public class Server {
     public final ServerSocket serverSocket;
@@ -49,21 +51,6 @@ public class Server {
             new ClientThread(serverSocket.accept(), youtube).start();
         }
 
-    }
-
-    private int byteToInt(byte[] bytes) {
-
-        return (bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3];
-    }
-
-    private long byteToInt_8(byte[] bytes) {
-
-        return ((long) bytes[0] << 56) + ((long) bytes[1] << 48) + ((long) bytes[2] << 40) + ((long) bytes[3] << 32) + (bytes[4] << 24) + (bytes[5] << 16) + (bytes[6] << 8) + bytes[7];
-    }
-
-    private int byteToInt_1(byte[] bytes) {
-
-        return bytes[0];
     }
 
     private int read_int(InputStream inputStream) throws IOException {
@@ -117,10 +104,10 @@ public class Server {
 
                     if (intCommand == 0x01) {
                         inputStream.read(intByteBuffer);
-                        int videoId = IntCodec.byteToInt(intByteBuffer);
+                        int videoId = byteToInt(intByteBuffer);
 
                         inputStream.read(intByteBuffer);
-                        int segmentId = IntCodec.byteToInt(intByteBuffer);
+                        int segmentId = byteToInt(intByteBuffer);
 
                         inputStream.read(shortByteBuffer);
                         int quality = IntCodec.byteToInt_1(shortByteBuffer);

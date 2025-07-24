@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.io.InputStream;
 
 
-public class ListVideosCommand implements Command{
+public class ListVideosCommand implements Command {
 
     private final Youtube youtube;
 
