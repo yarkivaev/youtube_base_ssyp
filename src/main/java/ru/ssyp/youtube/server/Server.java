@@ -1,14 +1,13 @@
 package ru.ssyp.youtube.server;
 import ru.ssyp.youtube.*;
+import ru.ssyp.youtube.channel.*;
 import ru.ssyp.youtube.password.PbkdfPassword;
-import ru.ssyp.youtube.sqlite.PreparedDatabase;
-import ru.ssyp.youtube.sqlite.SqliteDatabase;
-import ru.ssyp.youtube.sqlite.SqliteUsers;
-import ru.ssyp.youtube.sqlite.SqliteVideos;
+import ru.ssyp.youtube.sqlite.*;
 import ru.ssyp.youtube.token.Token;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
 import ru.ssyp.youtube.users.*;
 import ru.ssyp.youtube.video.VideoMetadata;
+import ru.ssyp.youtube.video.Videos;
 // import ru.ssyp.youtube.users.MemoryUsers;
 
 import java.io.*;
@@ -87,7 +86,7 @@ public class Server {
         }
     }
 
-    public static void main(String[] args) throws SQLException, IOException, InvalidTokenException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InterruptedException {
+    public static void main(String[] args) throws SQLException, IOException, InvalidTokenException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InterruptedException, InvalidChannelIdException, InvalidChannelDescriptionException, InvalidChannelNameException {
         System.out.println("Starting the server");
         ServerSocket serverSocket = new ServerSocket(8080);
         PreparedDatabase db = new SqliteDatabase(
@@ -97,20 +96,27 @@ public class Server {
             db,
             new TokenGenRandomB64(20)
         );
+        Channels channels = new SqliteChannels(db);
         VideoSegments segments = new MemoryVideoSegments(new HashMap<>());
+        Videos videos = new SqliteVideos(db, segments);
         Youtube youtube = new ServerYoutube(
             new SegmentatedYoutube(
                 new FileStorage(),
                 Path.of("ffmpeg"),
                 segments,
-                new String[]{"360"}
+                videos
             ),
-            new SqliteVideos(db, segments)
+            videos
         );
 
         Token token = users.addUser("test", new PbkdfPassword("123"));
         Session session = users.getSession(token);
-        youtube.upload(session, new VideoMetadata("test video", "hmm"), new FileInputStream(Paths.get("src", "test", "resources", "sample-15s.mp4").toFile()));
+        Channel channel = channels.addNew(session, "testchannel", "grr..");
+        youtube.upload(
+                session,
+                new VideoMetadata("test video", "hmm", channel.channelInfo().id()),
+                new FileInputStream(Paths.get("src", "test", "resources", "sample-15s.mp4").toFile())
+        );
 
         new Server(
             serverSocket,
