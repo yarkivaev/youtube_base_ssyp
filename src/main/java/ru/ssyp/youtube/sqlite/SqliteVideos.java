@@ -121,7 +121,7 @@ public class SqliteVideos implements Videos {
     @Override
     public Video[] videos() {
         try {
-            // written by deepseek, pray it works
+            // written by deepseek, pray that it works
             Statement stmt = db.conn().createStatement();
             ResultSet rs = stmt.executeQuery("SELECT v.*, cv.channelId FROM videos v LEFT JOIN channelsVideos cv ON v.videoId = cv.videoId;");
 
@@ -148,6 +148,60 @@ public class SqliteVideos implements Videos {
             return videos.toArray(new Video[0]);
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void editVideo(int videoId, EditVideo edit, Session session) throws InvalidVideoIdException, ForeignChannelIdException{
+        Connection dbConn = db.conn();
+        System.out.print("a");
+        try {
+            PreparedStatement videoIdStatement = db.conn().prepareStatement("SELECT * FROM videos WHERE videoId = ?;");
+            videoIdStatement.setInt(1, videoId);
+            ResultSet videoIdRS = videoIdStatement.executeQuery();
+
+            if (!videoIdRS.next()) {
+                throw new InvalidVideoIdException();
+            }
+            System.out.print("b");
+            VideoMetadata originalMetadata = new VideoMetadata(videoIdRS.getString("title"), videoIdRS.getString("description"), 0);
+
+            PreparedStatement getChannelId = db.conn().prepareStatement("SELECT channelId FROM channelsVideos WHERE videoId = ?;");
+            getChannelId.setInt(1, videoId);
+            ResultSet channelIdRS = getChannelId.executeQuery();
+
+            int channelId = channelIdRS.getInt(1);
+            System.out.print("c");
+            PreparedStatement ownerStatement = db.conn().prepareStatement("SELECT owner FROM channels WHERE id = ?;");
+            ownerStatement.setInt(1, channelId);
+            ResultSet ownerRS = ownerStatement.executeQuery();
+
+            int owner = ownerRS.getInt("owner");
+
+            if (owner != session.userId()) {
+                throw new ForeignChannelIdException();
+            }
+            System.out.print("d");
+            var pstmt = dbConn.prepareStatement("UPDATE videos SET title = ?, description = ? WHERE videoId = ?;");
+            System.out.print("g");
+            pstmt.setInt(3, videoId);
+            System.out.print("f");
+            if(edit.name.isPresent()){
+                pstmt.setString(1, edit.name.orElse("erop"));
+                System.out.println("AAAA");
+            } else{
+                pstmt.setString(1, originalMetadata.title);
+                System.out.println("EEE");
+            }
+            System.out.print("e");
+            if(edit.description.isPresent()){
+                pstmt.setString(2, String.valueOf(edit.description));
+            } else{
+                pstmt.setString(2, originalMetadata.description);
+            }
+            pstmt.executeUpdate();
+            System.out.print("z");
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
         }
     }
 
