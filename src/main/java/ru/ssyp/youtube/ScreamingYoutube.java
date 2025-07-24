@@ -29,6 +29,11 @@ public class ScreamingYoutube implements Youtube{
     }
 
     @Override
+    public void remove(int videoId, Session session) {
+
+    }
+
+    @Override
     public InputStream load(int videoId, int startSegment, int resolution) {
         System.out.println("Load has been called: {videoId=" + videoId + ",startSegment=" + startSegment + ",resolution=" + resolution + "}");
         return new NullInputStream();

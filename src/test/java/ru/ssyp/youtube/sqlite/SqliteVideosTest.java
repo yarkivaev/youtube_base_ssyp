@@ -46,7 +46,7 @@ public class SqliteVideosTest {
         session = users.getSession(users.addUser("test_user_1", new DummyPassword("test_value_1")));
         channel1 = channels.addNew(session, "name", "description");
         channel2 = channels.addNew(session, "name2", "description2");
-        videoSegments =  new MemoryVideoSegments(new HashMap<>());
+        videoSegments =  new MemoryVideoSegments(db);
         videos = new SqliteVideos(new SqliteDatabase(conn), videoSegments);
     }
 
@@ -79,17 +79,21 @@ public class SqliteVideosTest {
     }
 
     @Test
-    void videoInfoFetch() throws InvalidChannelIdException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidTokenException {
+    void videoInfoFetch() throws InvalidChannelIdException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidTokenException, SQLException, InvalidVideoIdException {
         VideoMetadata metadata = new VideoMetadata("Betty", "I really hope you're on my side", channel1.channelInfo().id());
         Video video = videos.addNew(session, metadata);
-        videoSegments.sendSegmentAmount(video.id, 5);
+        videoSegments.sendSegmentsAmount(video.id, 5);
         Video expVideo = new Video(video.id, metadata, () -> 5, (short) 2, Quality.QUALITY_1080, session.username());
         assertTrue(videosAreEqual(video, expVideo));
+        assertEquals(5, videoSegments.getSegmentsAmount(video.id));
+        videoSegments.deleteSegmentsAmount(video.id);
+        Assertions.assertThrows(InvalidVideoIdException.class, () -> videoSegments.getSegmentsAmount(video.id));
+        Assertions.assertThrows(InvalidVideoIdException.class, () -> videoSegments.deleteSegmentsAmount(video.id));
     }
 
     @Test
     void invalidIndex(){
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(InvalidVideoIdException.class, () -> {
             videos.video(1);
         });
     }
@@ -118,7 +122,7 @@ public class SqliteVideosTest {
         Assertions.assertThrows(ForeignChannelIdException.class, () -> videos.deleteVideo(video.id, wrongSession));
         videos.deleteVideo(video.id, session);
         Assertions.assertThrows(InvalidVideoIdException.class, () -> videos.deleteVideo(video.id, session));
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(InvalidVideoIdException.class, () -> {
             videos.video(video.id);
         });
     }

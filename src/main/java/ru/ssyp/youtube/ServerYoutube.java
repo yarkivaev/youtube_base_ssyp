@@ -27,6 +27,11 @@ public class ServerYoutube implements Youtube {
     }
 
     @Override
+    public void remove(int videoId, Session session) {
+
+    }
+
+    @Override
     public InputStream load(int videoId, int startSegment, int resolution) {
         return null;
     }

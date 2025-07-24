@@ -1,9 +1,12 @@
 package ru.ssyp.youtube.server;
 
 import ru.ssyp.youtube.Youtube;
+import ru.ssyp.youtube.channel.InvalidChannelIdException;
+import ru.ssyp.youtube.video.InvalidVideoIdException;
 import ru.ssyp.youtube.video.Quality;
 
 import java.io.InputStream;
+import java.sql.SQLException;
 
 public class GetVideoSegment implements Command {
 
@@ -27,7 +30,7 @@ public class GetVideoSegment implements Command {
     }
 
     @Override
-    public InputStream act() {
+    public InputStream act() throws SQLException, InvalidVideoIdException, InvalidChannelIdException {
         return youtube.load(videoId, segmentId, quality.resolution);
     }
 }

@@ -2,12 +2,14 @@ package ru.ssyp.youtube.server;
 import ru.ssyp.youtube.IntCodec;
 import ru.ssyp.youtube.ScreamingYoutube;
 import ru.ssyp.youtube.Youtube;
+import ru.ssyp.youtube.channel.InvalidChannelIdException;
 import ru.ssyp.youtube.sqlite.SqliteDatabase;
 import ru.ssyp.youtube.sqlite.SqliteUsers;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
 import ru.ssyp.youtube.users.InvalidTokenException;
 // import ru.ssyp.youtube.users.MemoryUsers;
 import ru.ssyp.youtube.users.Users;
+import ru.ssyp.youtube.video.InvalidVideoIdException;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -28,7 +30,7 @@ public class Server {
         this.youtube = youtube;
         this.users = users;
     }
-    public void serve() throws IOException, InvalidTokenException {
+    public void serve() throws IOException, InvalidTokenException, SQLException, InvalidVideoIdException, InvalidChannelIdException {
         while (true) {
             Socket socket = serverSocket.accept();
             byte[] shortByteBuffer = new byte[1];
@@ -61,7 +63,7 @@ public class Server {
         }
     }
 
-    public static void main(String[] args) throws SQLException, IOException, InvalidTokenException {
+    public static void main(String[] args) throws SQLException, IOException, InvalidTokenException, InvalidVideoIdException, InvalidChannelIdException {
         System.out.println("Starting the server");
         ServerSocket serverSocket = new ServerSocket(8080);
         Users users = new SqliteUsers(

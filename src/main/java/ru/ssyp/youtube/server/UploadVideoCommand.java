@@ -8,6 +8,7 @@ import ru.ssyp.youtube.video.VideoMetadata;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 
 public class UploadVideoCommand implements Command {
 
@@ -31,7 +32,7 @@ public class UploadVideoCommand implements Command {
 
 
     @Override
-    public InputStream act() {
+    public InputStream act() throws SQLException {
         try {
             youtube.upload(this.session, this.metadata, this.file);
             return new NullInputStream();

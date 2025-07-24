@@ -1,7 +1,9 @@
 package ru.ssyp.youtube;
 
+import ru.ssyp.youtube.channel.ForeignChannelIdException;
 import ru.ssyp.youtube.channel.InvalidChannelIdException;
 import ru.ssyp.youtube.users.Session;
+import ru.ssyp.youtube.video.InvalidVideoIdException;
 import ru.ssyp.youtube.video.Video;
 import ru.ssyp.youtube.video.VideoMetadata;
 import ru.ssyp.youtube.video.Videos;
@@ -11,6 +13,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.*;
 
 public class SegmentatedYoutube implements Youtube {
@@ -50,10 +53,9 @@ public class SegmentatedYoutube implements Youtube {
     }
 
     @Override
-    public Video upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException, InvalidChannelIdException {
+    public Video upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException, InvalidChannelIdException, SQLException {
         Video video = videos.addNew(user, metadata);
         Path tempDir = Files.createTempDirectory(String.valueOf(video.id));
-        System.out.println(tempDir);
         System.out.println(tempDir);
         Path local_file_path = Paths.get(tempDir.toString(), "output.mp4");
         Files.copy(stream, local_file_path);
@@ -88,7 +90,7 @@ public class SegmentatedYoutube implements Youtube {
         }
 
 
-        videoSegments.sendSegmentAmount(video.id, segment_count);
+        videoSegments.sendSegmentsAmount(video.id, segment_count);
 
         for (File file : file_list) {
             if (!file.isDirectory()) {
@@ -101,8 +103,21 @@ public class SegmentatedYoutube implements Youtube {
     }
 
     @Override
-    public InputStream load(int videoId, int startSegment, int resolution) {
-        int segmentAmount = videoSegments.getSegmentAmount(videoId);
+    public void remove(int videoId, Session session) throws InvalidVideoIdException, SQLException, IOException, ForeignChannelIdException {
+        videos.deleteVideo(videoId, session);
+        int segmentCount = videoSegments.getSegmentsAmount(videoId);
+        videoSegments.deleteSegmentsAmount(videoId);
+        for (String resolution : resolutions) {
+            for (int i = 0; i < segmentCount; i++) {
+                String segmentName = videoId + "_segment_" + resolution + "_" + i;
+                storage.remove(segmentName);
+            }
+        }
+    }
+
+    @Override
+    public InputStream load(int videoId, int startSegment, int resolution) throws SQLException, InvalidVideoIdException {
+        int segmentAmount = videoSegments.getSegmentsAmount(videoId);
         if (startSegment >= segmentAmount) {
             throw new RuntimeException("incorrect startSegment");
         }

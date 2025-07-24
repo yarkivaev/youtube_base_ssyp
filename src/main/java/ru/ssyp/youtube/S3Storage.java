@@ -70,6 +70,11 @@ public class S3Storage implements Storage {
     }
 
     @Override
+    public void remove(String name) {
+
+    }
+
+    @Override
     public InputStream download(String name) {
         try {
             createBucketIfNotExists(minioClient);
