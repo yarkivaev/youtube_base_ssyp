@@ -153,7 +153,6 @@ public class SqliteVideos implements Videos {
 
     public void editVideo(int videoId, EditVideo edit, Session session) throws InvalidVideoIdException, ForeignChannelIdException{
         Connection dbConn = db.conn();
-        System.out.print("a");
         try {
             PreparedStatement videoIdStatement = db.conn().prepareStatement("SELECT * FROM videos WHERE videoId = ?;");
             videoIdStatement.setInt(1, videoId);
@@ -162,7 +161,6 @@ public class SqliteVideos implements Videos {
             if (!videoIdRS.next()) {
                 throw new InvalidVideoIdException();
             }
-            System.out.print("b");
             VideoMetadata originalMetadata = new VideoMetadata(videoIdRS.getString("title"), videoIdRS.getString("description"), 0);
 
             PreparedStatement getChannelId = db.conn().prepareStatement("SELECT channelId FROM channelsVideos WHERE videoId = ?;");
@@ -170,7 +168,6 @@ public class SqliteVideos implements Videos {
             ResultSet channelIdRS = getChannelId.executeQuery();
 
             int channelId = channelIdRS.getInt(1);
-            System.out.print("c");
             PreparedStatement ownerStatement = db.conn().prepareStatement("SELECT owner FROM channels WHERE id = ?;");
             ownerStatement.setInt(1, channelId);
             ResultSet ownerRS = ownerStatement.executeQuery();
@@ -180,26 +177,19 @@ public class SqliteVideos implements Videos {
             if (owner != session.userId()) {
                 throw new ForeignChannelIdException();
             }
-            System.out.print("d");
             var pstmt = dbConn.prepareStatement("UPDATE videos SET title = ?, description = ? WHERE videoId = ?;");
-            System.out.print("g");
             pstmt.setInt(3, videoId);
-            System.out.print("f");
             if(edit.name.isPresent()){
-                pstmt.setString(1, edit.name.orElse("erop"));
-                System.out.println("AAAA");
+                pstmt.setString(1, edit.name.orElse(originalMetadata.title));
             } else{
                 pstmt.setString(1, originalMetadata.title);
-                System.out.println("EEE");
             }
-            System.out.print("e");
             if(edit.description.isPresent()){
-                pstmt.setString(2, String.valueOf(edit.description));
+                pstmt.setString(2, edit.description.orElse(originalMetadata.description));
             } else{
                 pstmt.setString(2, originalMetadata.description);
             }
             pstmt.executeUpdate();
-            System.out.print("z");
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }

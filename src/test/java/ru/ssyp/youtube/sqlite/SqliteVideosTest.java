@@ -104,6 +104,14 @@ public class SqliteVideosTest {
         System.out.println(video.metadata.description);
         Video expVideo = new Video(video.id, new VideoMetadata("Test1", String.valueOf(video.metadata.description), video.metadata.channelId), () -> 5, (short) 2, Quality.QUALITY_1080, session.username());
         assertTrue(videosAreEqual(video, expVideo));
+        edit = new EditVideo(Optional.ofNullable("").filter(Predicate.not(s -> true)), Optional.of("Lemons"), Optional.of(new ByteArrayInputStream( "Hello!".getBytes())));
+        videos.editVideo(video.id, edit, session);
+        Video exp2video = new Video(video.id, new VideoMetadata("Test1", "Lemons", 5), () -> 5, (short) 2, Quality.QUALITY_1080, session.username());
+        video = videos.video(video.id);
+        System.out.println("");
+        System.out.println(video.metadata.title);
+        System.out.println(video.metadata.description);
+        assertTrue(videosAreEqual(video, exp2video));
     }
 
     @Test
