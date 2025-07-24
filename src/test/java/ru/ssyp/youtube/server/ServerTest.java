@@ -6,7 +6,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import ru.ssyp.youtube.IntCodec;
 import ru.ssyp.youtube.ScreamingYoutube;
+import ru.ssyp.youtube.StringCodec;
+import ru.ssyp.youtube.password.DummyPassword;
 import ru.ssyp.youtube.password.Password;
 import ru.ssyp.youtube.password.PbkdfPassword;
 import ru.ssyp.youtube.token.Token;
@@ -73,12 +76,13 @@ public class ServerTest {
     }
 
     @Test
-    @Disabled
     void getVideoInfoTest() throws IOException, InterruptedException {
         byte[] command = new byte[]{0x00, 0x00, 0x00, 0x00, 0x00};
         clientOutput.write(command);
         Thread.sleep(500);
-        System.out.println(new BufferedReader(new InputStreamReader(clientInput)).read());
+        byte[] videoInfo = new byte[1];
+        clientInput.read(videoInfo);
+        assertEquals(0, videoInfo[0]);
     }
 
 
@@ -100,11 +104,12 @@ public class ServerTest {
     }
 
     @Test
-    @Disabled
     void listVideosTest() throws IOException, InterruptedException {
 
         clientOutput.write(new byte[]{0x02});
-        System.out.println(new BufferedReader(new InputStreamReader(clientInput)).read());
+        byte[] bytes = new byte[1];
+        clientInput.read(bytes);
+        assertEquals(0, bytes[0]);
 
     }
 
@@ -128,42 +133,35 @@ public class ServerTest {
     }
 
     @Test
-    void CreateUserTest() throws IOException, InterruptedException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException {
+    void createUserTest() throws IOException, InterruptedException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException {
         String username = "Testuser777";
         Password password = new PbkdfPassword("a56.6.912ddv");
-
-
-        byte[] command = new byte[]{
-                0x04,
-                0x00, 0x00, 0x00, 0x0b,
-                0x54, 0x65, 0x73, 0x74, 0x75, 0x73, 0x65, 0x72, 0x37, 0x37, 0x37,
-                0x00, 0x00, 0x00, 0x0c,
-                0x61, 0x35, 0x36, 0x2e, 0x36, 0x2e, 0x39, 0x31, 0x32, 0x64, 0x64, 0x76
-        };
-        clientOutput.write(command);
-        Thread.sleep(500);
+        clientOutput.write(new byte[]{0x04});
+        clientOutput.write(StringCodec.stringToStream(username));
+        clientOutput.write(StringCodec.stringToStream(password.value()));
+        byte[] bytes = new byte[1];
+        clientInput.read(bytes);
+        assertEquals(0, bytes[0]);
     }
 
-//    @Test
-//    void UploadVideoTest() throws IOException, InterruptedException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException {
-//        Token token = new Token("1111184543");
-//        VideoMetadata metadata = new VideoMetadata("duckroll", "prokatitsa -- 5000rubley");
-//        long filesize = 56;
-//
-//
-//        byte[] command = new byte[]{
-//                0x05,
-//                0x00, 0x00, 0x00, 0x08,
-//                0x39, 0x36, 0x33, 0x36, 0x31, 0x32, 0x33, 0x34,
-//                0x00, 0x00, 0x00, 0x08,
-//                0x64, 0x75, 0x63, 0x6b, 0x72, 0x6f, 0x6c, 0x6c,
-//                0x00, 0x00, 0x00, 0x18,
-//                0x70, 0x72, 0x6f, 0x6b, 0x61, 0x74, 0x69, 0x74, 0x73, 0x61, 0x20, 0x2d, 0x2d, 0x20, 0x35, 0x30, 0x30, 0x30, 0x72, 0x75, 0x62, 0x6c, 0x65, 0x79,
-//                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08
-//        };
-//        clientOutput.write(command);
-//        Thread.sleep(500);
-//    }
+    @Test
+    void UploadVideoTest() throws IOException, InterruptedException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException {
+        Token token = users.addUser("testUser", new DummyPassword("testPass"));
+        int channelId = 42;
+        String title = "testVideo";
+        String description = "Desc";
+        int fileSize = 3;
+        InputStream file = new ByteArrayInputStream(new byte[]{0x00, 0x00, 0x00});
+        clientOutput.write(token.rawContent().readAllBytes());
+        clientOutput.write(IntCodec.intToByte(channelId));
+        clientOutput.write(StringCodec.stringToStream(title));
+        clientOutput.write(StringCodec.stringToStream(description));
+        clientOutput.write(IntCodec.intToByte(fileSize));
+        clientOutput.write(file.readAllBytes());
+        byte[] bytes = new byte[1];
+        clientInput.read(bytes);
+        assertEquals(0, bytes[0]);
+    }
 }
 
 
