@@ -83,6 +83,12 @@ public class Server {
                     if (intCommand == 0x00) {
                         inputStream.read(intByteBuffer);
                         int videoId = IntCodec.byteToInt(intByteBuffer);
+
+                        command = new GetVideoInfoCommand(videoId, youtube);
+                        outputStream.write(command.act().readAllBytes());
+                    } else if (intCommand == 0x01) {
+                        inputStream.read(intByteBuffer);
+                        int videoId = IntCodec.byteToInt(intByteBuffer);
                         command = new GetVideoInfoCommand(videoId, youtube);
                         outputStream.write(command.act().readAllBytes());
                     }
@@ -100,10 +106,12 @@ public class Server {
                         byte[] videoSegment = command.act().readAllBytes();
                         outputStream.write(IntCodec.intToByte(videoSegment.length));
                         outputStream.write(videoSegment);
-                    }
-                    if (intCommand == 0x02) {
+                    } else if (intCommand == 0x02) {
                         command = new ListVideosCommand(youtube);
                         outputStream.write(command.act().readAllBytes());
+                    } else {
+                        // защита от подлянок
+                        throw new RuntimeException("invalid command received");
                     }
                     if (intCommand == 0x03) {
                         String username = StringCodec.streamToString(inputStream);
@@ -160,6 +168,7 @@ public class Server {
                 db,
                 new TokenGenRandomB64(20)
         );
+        Channels channels = new SqliteChannels(db);
         VideoSegments segments = new MemoryVideoSegments(new HashMap<>());
         Videos videos = new SqliteVideos(db, segments);
         Youtube youtube = new ServerYoutube(
@@ -175,19 +184,11 @@ public class Server {
 
         Token token = users.addUser("test", new PbkdfPassword("123"));
         Session session = users.getSession(token);
-
-        Channels channels = new SqliteChannels(db);
-        Channel channel = channels.addNew(
-                session,
-                "testChannel",
-                "Description"
-        );
-
+        Channel channel = channels.addNew(session, "testchannel", "grr..");
         youtube.upload(
                 session,
                 new VideoMetadata("test video", "hmm", channel.channelInfo().id()),
-                new FileInputStream(Paths.get("src", "test", "resources", "sample-15s.mp4").toFile()
-                )
+                new FileInputStream(Paths.get("src", "test", "resources", "sample-15s.mp4").toFile())
         );
 
         new Server(

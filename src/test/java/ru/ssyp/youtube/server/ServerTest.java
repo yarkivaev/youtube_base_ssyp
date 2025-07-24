@@ -87,7 +87,6 @@ public class ServerTest {
 
 
     @Test
-    @Disabled
     void getVideoSegmentTest() throws IOException, InterruptedException {
         int videoId = 42;
         int segmentId = 5;
