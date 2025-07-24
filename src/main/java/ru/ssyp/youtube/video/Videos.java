@@ -9,5 +9,7 @@ public interface Videos {
 
     Video video(int videoId);
 
+    Video[] videos();
+
     void deleteVideo(int id, Session session) throws InvalidVideoIdException, ForeignChannelIdException;
 }

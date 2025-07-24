@@ -41,6 +41,8 @@ public class Video implements ProtocolValue {
 
     @Override
     public InputStream rawContent() throws IOException {
+       byte[] id = IntCodec.intToByte(this.id);
+       byte[] channelId = IntCodec.intToByte(this.metadata.channelId);
        byte[] segmentAmount = IntCodec.intToByte(this.segmentAmount());
        byte[] segmentLength = new byte[]{((byte)(this.segmentLength & 0xFF))};
        byte[] maxQuality = this.maxQuality.rawContent().readAllBytes();
@@ -49,6 +51,8 @@ public class Video implements ProtocolValue {
        byte[] description = StringCodec.stringToStream(this.metadata.description);
 
        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+       outputStream.write(id);
+       outputStream.write(channelId);
        outputStream.write(segmentAmount);
        outputStream.write(segmentLength);
        outputStream.write(maxQuality);
