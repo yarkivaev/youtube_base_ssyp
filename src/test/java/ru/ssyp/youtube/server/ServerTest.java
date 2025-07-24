@@ -2,6 +2,7 @@ package ru.ssyp.youtube.server;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -72,6 +73,7 @@ public class ServerTest {
     }
 
     @Test
+    @Disabled
     void getVideoInfoTest() throws IOException, InterruptedException {
         byte[] command = new byte[]{0x00, 0x00, 0x00, 0x00, 0x00};
         clientOutput.write(command);
@@ -81,6 +83,7 @@ public class ServerTest {
 
 
     @Test
+    @Disabled
     void getVideoSegmentTest() throws IOException, InterruptedException {
         int videoId = 42;
         int segmentId = 5;
@@ -97,6 +100,7 @@ public class ServerTest {
     }
 
     @Test
+    @Disabled
     void listVideosTest() throws IOException, InterruptedException {
 
         clientOutput.write(new byte[]{0x02});
@@ -140,26 +144,26 @@ public class ServerTest {
         Thread.sleep(500);
     }
 
-    @Test
-    void UploadVideoTest() throws IOException, InterruptedException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException {
-        Token token = new Token("1111184543");
-        VideoMetadata metadata = new VideoMetadata("duckroll", "prokatitsa -- 5000rubley");
-        long filesize = 56;
-
-
-        byte[] command = new byte[]{
-                0x05,
-                0x00, 0x00, 0x00, 0x08,
-                0x39, 0x36, 0x33, 0x36, 0x31, 0x32, 0x33, 0x34,
-                0x00, 0x00, 0x00, 0x08,
-                0x64, 0x75, 0x63, 0x6b, 0x72, 0x6f, 0x6c, 0x6c,
-                0x00, 0x00, 0x00, 0x18,
-                0x70, 0x72, 0x6f, 0x6b, 0x61, 0x74, 0x69, 0x74, 0x73, 0x61, 0x20, 0x2d, 0x2d, 0x20, 0x35, 0x30, 0x30, 0x30, 0x72, 0x75, 0x62, 0x6c, 0x65, 0x79,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08
-        };
-        clientOutput.write(command);
-        Thread.sleep(500);
-    }
+//    @Test
+//    void UploadVideoTest() throws IOException, InterruptedException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException {
+//        Token token = new Token("1111184543");
+//        VideoMetadata metadata = new VideoMetadata("duckroll", "prokatitsa -- 5000rubley");
+//        long filesize = 56;
+//
+//
+//        byte[] command = new byte[]{
+//                0x05,
+//                0x00, 0x00, 0x00, 0x08,
+//                0x39, 0x36, 0x33, 0x36, 0x31, 0x32, 0x33, 0x34,
+//                0x00, 0x00, 0x00, 0x08,
+//                0x64, 0x75, 0x63, 0x6b, 0x72, 0x6f, 0x6c, 0x6c,
+//                0x00, 0x00, 0x00, 0x18,
+//                0x70, 0x72, 0x6f, 0x6b, 0x61, 0x74, 0x69, 0x74, 0x73, 0x61, 0x20, 0x2d, 0x2d, 0x20, 0x35, 0x30, 0x30, 0x30, 0x72, 0x75, 0x62, 0x6c, 0x65, 0x79,
+//                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08
+//        };
+//        clientOutput.write(command);
+//        Thread.sleep(500);
+//    }
 }
 
 

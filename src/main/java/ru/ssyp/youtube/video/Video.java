@@ -14,7 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.util.function.Supplier;
 
 
 public class Video implements ProtocolValue {
@@ -22,7 +22,7 @@ public class Video implements ProtocolValue {
 
     public final VideoMetadata metadata;
 
-    public final int segmentAmount;
+    public final Supplier<Integer> segmentAmount;
 
     public final short segmentLength;
 
@@ -33,7 +33,7 @@ public class Video implements ProtocolValue {
     public Video(
             int id,
             VideoMetadata metadata,
-            int segmentAmount,
+            Supplier<Integer> segmentAmount,
             short segmentLength,
             Quality maxQuality,
             String author
@@ -48,20 +48,24 @@ public class Video implements ProtocolValue {
 
     @Override
     public InputStream rawContent() throws IOException {
-        byte[] segmentAmount = IntCodec.intToByte(this.segmentAmount);
-        byte[] segmentLength = new byte[]{((byte)(this.segmentLength & 0xFF))};
-        byte[] maxQuality = this.maxQuality.rawContent().readAllBytes();
-        byte[] authorName = StringCodec.stringToStream(this.author);
-        byte[] title = StringCodec.stringToStream(this.metadata.title);
-        byte[] description = StringCodec.stringToStream(this.metadata.description);
+       byte[] id = IntCodec.intToByte(this.id);
+       byte[] channelId = IntCodec.intToByte(this.metadata.channelId);
+       byte[] segmentAmount = IntCodec.intToByte(this.segmentAmount());
+       byte[] segmentLength = new byte[]{((byte)(this.segmentLength & 0xFF))};
+       byte[] maxQuality = this.maxQuality.rawContent().readAllBytes();
+       byte[] authorName = StringCodec.stringToStream(this.author);
+       byte[] title = StringCodec.stringToStream(this.metadata.title);
+       byte[] description = StringCodec.stringToStream(this.metadata.description);
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(segmentAmount);
-        outputStream.write(segmentLength);
-        outputStream.write(maxQuality);
-        outputStream.write(authorName);
-        outputStream.write(title);
-        outputStream.write(description);
+       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+       outputStream.write(id);
+       outputStream.write(channelId);
+       outputStream.write(segmentAmount);
+       outputStream.write(segmentLength);
+       outputStream.write(maxQuality);
+       outputStream.write(authorName);
+       outputStream.write(title);
+       outputStream.write(description);
         return new ByteArrayInputStream(outputStream.toByteArray());
     }
 
@@ -70,12 +74,19 @@ public class Video implements ProtocolValue {
                 42,
                 new VideoMetadata(
                         "Fake video",
-                "Fake description"
+                "Fake description",
+                        123
+
+
                 ),
-                10,
+                () -> 10,
                 (short) 5,
                 Quality.QUALITY_1080,
                 "fake author"
         );
+    }
+
+    public int segmentAmount(){
+        return this.segmentAmount.get();
     }
 }
