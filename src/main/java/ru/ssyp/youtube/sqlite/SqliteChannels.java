@@ -89,11 +89,9 @@ public class SqliteChannels implements Channels {
             selectStatement.setInt(1, userId);
             ResultSet rs = selectStatement.executeQuery();
             List<Channel> channels = new ArrayList<>();
-            int i = 1;
             while (rs.next()){
-                int channelId = rs.getInt(i);
+                int channelId = rs.getInt(1);
                 channels.add(channel(channelId));
-                i++;
             }
             return channels.toArray(new Channel[0]);
         } catch (SQLException e) {

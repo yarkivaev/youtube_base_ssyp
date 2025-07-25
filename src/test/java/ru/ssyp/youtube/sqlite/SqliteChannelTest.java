@@ -45,6 +45,8 @@ public class SqliteChannelTest {
         session1 = users.getSession(users.addUser("test_user_1", new DummyPassword("test_value_1")));
         session2 = users.getSession(users.addUser("test_user_2", new DummyPassword("test_value_2")));
         channel = channels.addNew(session1, "name", "description");
+        channel = channels.addNew(session1, "name1", "description1");
+
 
     }
 
@@ -100,5 +102,6 @@ public class SqliteChannelTest {
     void channelsTest() throws SQLException {
         Channel[] c = channels.getUserChannel(session1.userId());
         System.out.println(c[0].channelInfo().description());
+        System.out.println(c[1].channelInfo().description());
     }
 }
