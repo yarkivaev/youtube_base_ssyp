@@ -1,6 +1,8 @@
 package ru.ssyp.youtube.server;
 
 import ru.ssyp.youtube.Youtube;
+import ru.ssyp.youtube.channel.InvalidChannelIdException;
+import ru.ssyp.youtube.video.InvalidVideoIdException;
 import ru.ssyp.youtube.video.Quality;
 
 import java.io.InputStream;
@@ -23,7 +25,7 @@ public class GetVideoSegment implements Command {
     }
 
     @Override
-    public InputStream act() {
+    public InputStream act() throws InvalidVideoIdException, InvalidChannelIdException {
         return youtube.load(videoId, segmentId, quality.resolution);
     }
 }

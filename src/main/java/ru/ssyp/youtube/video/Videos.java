@@ -7,7 +7,7 @@ import ru.ssyp.youtube.users.Session;
 public interface Videos {
     Video addNew(Session session, VideoMetadata metadata) throws InvalidChannelIdException;
 
-    Video video(int videoId);
+    Video video(int videoId) throws InvalidVideoIdException;
 
     Video[] videos();
 

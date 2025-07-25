@@ -9,7 +9,6 @@ import ru.ssyp.youtube.users.Session;
 import ru.ssyp.youtube.users.Users;
 
 import java.io.InputStream;
-import java.sql.SQLException;
 
 public class UnsubscribeChannelCommand implements Command {
     private final Session session;
@@ -33,7 +32,7 @@ public class UnsubscribeChannelCommand implements Command {
         try {
             channel.unsubscribe(session.userId());
             return null;
-        } catch (SQLException | InvalidUserIdException | NotSubscribedException e) {
+        } catch (InvalidUserIdException | NotSubscribedException e) {
             throw new RuntimeException(e);
         }
     }

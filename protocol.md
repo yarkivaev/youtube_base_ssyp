@@ -147,3 +147,8 @@ channelinfo = [string - name] [string - description] [u32 - subscribers] [u32 - 
 Данные передаются в порядке: **заголовок -> описание -> видео**, с пропуском при необходимости
 
 Название и описание передаются как строки, файл как [u64 - file size] [file bytes]
+
+### 0x0E -  список каналов определённого пользавателя
+**C->S**: 0x0E [string - token] 
+
+**S->C**: [u32 - count] count*([u32 - channelid] [channelinfo])

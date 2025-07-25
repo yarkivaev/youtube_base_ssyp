@@ -1,7 +1,9 @@
 package ru.ssyp.youtube;
 
+import ru.ssyp.youtube.channel.ForeignChannelIdException;
 import ru.ssyp.youtube.channel.InvalidChannelIdException;
 import ru.ssyp.youtube.users.Session;
+import ru.ssyp.youtube.video.InvalidVideoIdException;
 import ru.ssyp.youtube.video.Video;
 import ru.ssyp.youtube.video.VideoMetadata;
 import ru.ssyp.youtube.video.Videos;
@@ -13,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.sql.SQLException;
 
 public class SegmentatedYoutube implements Youtube {
     private final Path ffmpegPath;
@@ -81,7 +84,11 @@ public class SegmentatedYoutube implements Youtube {
         }
 
 
-        videoSegments.sendSegmentAmount(video.id, segment_count);
+        try {
+            videoSegments.sendSegmentsAmount(video.id, segment_count);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
         for (File file : file_list) {
             if (!file.isDirectory()) {
@@ -94,18 +101,39 @@ public class SegmentatedYoutube implements Youtube {
     }
 
     @Override
-    public InputStream load(int videoId, int startSegment, int resolution) {
-        int segmentAmount = videoSegments.getSegmentAmount(videoId);
-        if (startSegment >= segmentAmount) {
-            throw new RuntimeException("incorrect startSegment");
+    public void remove(int videoId, Session session) throws InvalidVideoIdException, IOException, ForeignChannelIdException {
+        try {
+            videos.deleteVideo(videoId, session);
+            int segmentCount = videoSegments.getSegmentsAmount(videoId);
+            videoSegments.deleteSegmentsAmount(videoId);
+            for (String resolution : resolutions) {
+                for (int i = 0; i < segmentCount; i++) {
+                    String segmentName = videoId + "_segment_" + resolution + "_" + i;
+                    storage.remove(segmentName);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        if (!Arrays.asList(resolutions).contains(Integer.toString(resolution))) {
-            throw new RuntimeException("incorrect resolution");
-        }
+    }
 
-        String file_name = videoId + "_segment_" + resolution + "_" + startSegment;
-        System.out.println(file_name);
-        return storage.download(file_name);
+    @Override
+    public InputStream load(int videoId, int startSegment, int resolution) throws InvalidVideoIdException {
+        try {
+            int segmentAmount = videoSegments.getSegmentsAmount(videoId);
+            if (startSegment >= segmentAmount) {
+                throw new RuntimeException("incorrect startSegment");
+            }
+            if (!Arrays.asList(resolutions).contains(Integer.toString(resolution))) {
+                throw new RuntimeException("incorrect resolution");
+            }
+
+            String file_name = videoId + "_segment_" + resolution + "_" + startSegment;
+            System.out.println(file_name);
+            return storage.download(file_name);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

@@ -9,7 +9,6 @@ import ru.ssyp.youtube.users.Session;
 import ru.ssyp.youtube.users.Users;
 
 import java.io.InputStream;
-import java.sql.SQLException;
 
 public class SubscribeChannelCommand implements Command {
     private final Session session;
@@ -33,7 +32,7 @@ public class SubscribeChannelCommand implements Command {
         try {
             channel.subscribe(session.userId());
             return null;
-        } catch (SQLException | InvalidUserIdException | AlreadySubscribedException e) {
+        } catch (InvalidUserIdException | AlreadySubscribedException e) {
             throw new RuntimeException(e);
         }
     }

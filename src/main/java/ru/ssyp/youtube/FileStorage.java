@@ -2,7 +2,9 @@ package ru.ssyp.youtube;
 
 import java.io.*;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /*
     Abandon all hope ye, who import this package.
@@ -67,6 +69,11 @@ public class FileStorage implements Storage {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void remove(String name) throws IOException {
+        Files.delete(Paths.get(dir.toString(), name + ".txt"));
     }
 
     // This is for downloading things:

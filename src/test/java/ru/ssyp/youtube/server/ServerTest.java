@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.ssyp.youtube.IntCodec;
 import ru.ssyp.youtube.ScreamingYoutube;
+import ru.ssyp.youtube.channel.InvalidChannelIdException;
+
 import ru.ssyp.youtube.StringCodec;
 import ru.ssyp.youtube.channel.Channels;
 import ru.ssyp.youtube.password.DummyPassword;
@@ -14,9 +16,15 @@ import ru.ssyp.youtube.sqlite.SqliteChannels;
 import ru.ssyp.youtube.sqlite.SqliteDatabase;
 import ru.ssyp.youtube.token.Token;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
+<<<<<<< HEAD
 import ru.ssyp.youtube.users.InvalidTokenException;
 import ru.ssyp.youtube.users.MemoryUsers;
 import ru.ssyp.youtube.users.Users;
+=======
+import ru.ssyp.youtube.users.*;
+import ru.ssyp.youtube.video.InvalidVideoIdException;
+import ru.ssyp.youtube.video.VideoMetadata;
+>>>>>>> master
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -48,6 +56,7 @@ public class ServerTest {
         );
         channels = new SqliteChannels(new SqliteDatabase(DriverManager.getConnection("jdbc:sqlite::memory:")));
         new Thread(
+<<<<<<< HEAD
                 () -> {
                     try {
                         new Server(
@@ -58,6 +67,22 @@ public class ServerTest {
                         ).serve();
                     } catch (IOException | InvalidTokenException e) {
                         throw new RuntimeException(e);
+=======
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            new Server(
+                                    serverSocket,
+                                    new ScreamingYoutube(),
+                                    users,
+                                    channels
+                            ).serve();
+                        } catch (IOException | InvalidTokenException | SQLException | InvalidVideoIdException |
+                                 InvalidChannelIdException e) {
+                            throw new RuntimeException(e);
+                        }
+>>>>>>> master
                     }
                 }
         ).start();

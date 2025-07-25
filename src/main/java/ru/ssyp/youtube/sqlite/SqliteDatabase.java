@@ -43,12 +43,17 @@ public class SqliteDatabase implements PreparedDatabase {
                         maxQuality INTEGER
                     );
                     """);
-
             statement.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS channelsVideos (
                         channelId INTEGER NOT NULL REFERENCES channels(id),
                         videoId INTEGER NOT NULL REFERENCES videos(videoId) UNIQUE,
                         PRIMARY KEY (channelId, videoId)
+                    );
+                    """);
+            statement.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS videoSegmentsAmount (
+                        videoId INTEGER PRIMARY KEY REFERENCES videos(id),
+                        segmentsAmount INTEGER NOT NULL
                     );
                     """);
             initialized = true;

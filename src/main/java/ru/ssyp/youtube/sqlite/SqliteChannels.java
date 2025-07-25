@@ -6,6 +6,8 @@ import ru.ssyp.youtube.users.Session;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SqliteChannels implements Channels {
     private final PreparedDatabase db;
@@ -72,6 +74,23 @@ public class SqliteChannels implements Channels {
             PreparedStatement deleteStatement = db.conn().prepareStatement("DELETE FROM channels WHERE id = ?;");
             deleteStatement.setInt(1, channelId);
             deleteStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Channel[] getUserChannel(int userId) {
+        try {
+            PreparedStatement selectStatement = db.conn().prepareStatement("SELECT id FROM channels WHERE owner = ?;");
+            selectStatement.setInt(1, userId);
+            ResultSet rs = selectStatement.executeQuery();
+            List<Channel> channels = new ArrayList<>();
+            while (rs.next()) {
+                int channelId = rs.getInt(1);
+                channels.add(channel(channelId));
+            }
+            return channels.toArray(new Channel[0]);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

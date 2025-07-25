@@ -9,6 +9,11 @@ import ru.ssyp.youtube.channel.*;
 import ru.ssyp.youtube.password.DummyPassword;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
 import ru.ssyp.youtube.users.*;
+<<<<<<< HEAD
+=======
+import ru.ssyp.youtube.video.InvalidVideoIdException;
+import ru.ssyp.youtube.video.Video;
+>>>>>>> master
 import ru.ssyp.youtube.video.VideoMetadata;
 import ru.ssyp.youtube.video.Videos;
 
@@ -36,7 +41,11 @@ public class SqliteChannelInfoTest {
         ResultSet rs = selectStatement.executeQuery();
         int channelId = rs.getInt("id");
         channelInfo = new SqliteChannelInfo(channelId, db);
+<<<<<<< HEAD
         VideoSegments videoSegments = new MemoryVideoSegments(new HashMap<>());
+=======
+        videoSegments =  new MemoryVideoSegments(db);
+>>>>>>> master
         videos = new SqliteVideos(new SqliteDatabase(conn), videoSegments);
     }
 
@@ -56,9 +65,9 @@ public class SqliteChannelInfoTest {
         channel.unsubscribe(session2.userId());
         Assertions.assertEquals(0, channelInfo.subscribers());
         Assertions.assertEquals(0, channel.channelInfo().videoAmount());
-        videos.addNew(session1, new VideoMetadata("Betty", "I really hope you're on my side, I really hope you get it", channel.channelInfo().id()));
+        Video video = videos.addNew(session1, new VideoMetadata("Betty", "I really hope you're on my side, I really hope you get it", channel.channelInfo().id()));
         Assertions.assertEquals(1, channel.channelInfo().videoAmount());
-        videos.deleteVideo(1, session1);
+        videos.deleteVideo(video.id, session1);
         Assertions.assertEquals(0, channel.channelInfo().videoAmount());
     }
 }
