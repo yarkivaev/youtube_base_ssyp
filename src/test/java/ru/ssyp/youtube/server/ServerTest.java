@@ -9,9 +9,12 @@ import org.junit.jupiter.params.provider.ValueSource;
 import ru.ssyp.youtube.IntCodec;
 import ru.ssyp.youtube.ScreamingYoutube;
 import ru.ssyp.youtube.StringCodec;
+import ru.ssyp.youtube.channel.Channels;
 import ru.ssyp.youtube.password.DummyPassword;
 import ru.ssyp.youtube.password.Password;
 import ru.ssyp.youtube.password.PbkdfPassword;
+import ru.ssyp.youtube.sqlite.SqliteChannels;
+import ru.ssyp.youtube.sqlite.SqliteDatabase;
 import ru.ssyp.youtube.token.Token;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
 import ru.ssyp.youtube.users.*;
@@ -21,6 +24,8 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,8 +42,10 @@ public class ServerTest {
 
     private OutputStream clientOutput;
 
+    private Channels channels;
+
     @BeforeEach
-    void beforeEach() throws IOException, InvalidTokenException {
+    void beforeEach() throws IOException, InvalidTokenException, SQLException {
         serverSocket = new ServerSocket(8080);
         users = new MemoryUsers(
                 new HashMap<>(),
@@ -46,6 +53,7 @@ public class ServerTest {
                 new TokenGenRandomB64(20),
                 new Random()
         );
+        channels = new SqliteChannels(new SqliteDatabase(DriverManager.getConnection("jdbc:sqlite::memory:")));
         new Thread(
                 new Runnable() {
                     @Override
@@ -54,7 +62,8 @@ public class ServerTest {
                             new Server(
                                     serverSocket,
                                     new ScreamingYoutube(),
-                                    users
+                                    users,
+                                    channels
                             ).serve();
                         } catch (IOException | InvalidTokenException e) {
                             throw new RuntimeException(e);
