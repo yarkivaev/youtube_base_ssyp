@@ -12,4 +12,6 @@ public interface Channels {
     void removeChannel(Session session, int channelId) throws InvalidChannelIdException, ForeignChannelIdException;
 
     Channel[] getUserChannel(int userId);
+
+    public Channel[] getAllChannel();
 }
