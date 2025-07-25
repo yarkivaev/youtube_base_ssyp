@@ -4,7 +4,14 @@ import ru.ssyp.youtube.VideoSegments;
 import ru.ssyp.youtube.channel.ForeignChannelIdException;
 import ru.ssyp.youtube.channel.InvalidChannelIdException;
 import ru.ssyp.youtube.users.Session;
+
 import ru.ssyp.youtube.video.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import java.sql.*;
 
@@ -116,6 +123,83 @@ public class SqliteVideos implements Videos {
             System.err.println(e.getMessage());
         }
         return null;
+    }
+
+    @Override
+    public Video[] videos() {
+        try {
+            // written by deepseek, pray that it works
+            Statement stmt = db.conn().createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT v.*, cv.channelId FROM videos v LEFT JOIN channelsVideos cv ON v.videoId = cv.videoId;");
+
+            List<Video> videos = new ArrayList<>();
+
+            while (rs.next()) {
+                int channelId = rs.getInt("channelId");
+                int videoId = rs.getInt("videoId");
+                String owner = rs.getString("owner");
+                String title = rs.getString("title");
+                String description = rs.getString("description");
+                int maxQuality = rs.getInt("maxQuality");
+
+                videos.add(new Video(
+                        videoId,
+                        new VideoMetadata(title, description, channelId),
+                        () -> videoSegments.getSegmentAmount(videoId),
+                        (short) 2,
+                        Quality.fromPriority(maxQuality),
+                        owner
+                ));
+            }
+
+            return videos.toArray(new Video[0]);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void editVideo(int videoId, EditVideo edit, Session session) throws InvalidVideoIdException, ForeignChannelIdException{
+        Connection dbConn = db.conn();
+        try {
+            PreparedStatement videoIdStatement = db.conn().prepareStatement("SELECT * FROM videos WHERE videoId = ?;");
+            videoIdStatement.setInt(1, videoId);
+            ResultSet videoIdRS = videoIdStatement.executeQuery();
+
+            if (!videoIdRS.next()) {
+                throw new InvalidVideoIdException();
+            }
+            VideoMetadata originalMetadata = new VideoMetadata(videoIdRS.getString("title"), videoIdRS.getString("description"), 0);
+
+            PreparedStatement getChannelId = db.conn().prepareStatement("SELECT channelId FROM channelsVideos WHERE videoId = ?;");
+            getChannelId.setInt(1, videoId);
+            ResultSet channelIdRS = getChannelId.executeQuery();
+
+            int channelId = channelIdRS.getInt(1);
+            PreparedStatement ownerStatement = db.conn().prepareStatement("SELECT owner FROM channels WHERE id = ?;");
+            ownerStatement.setInt(1, channelId);
+            ResultSet ownerRS = ownerStatement.executeQuery();
+
+            int owner = ownerRS.getInt("owner");
+
+            if (owner != session.userId()) {
+                throw new ForeignChannelIdException();
+            }
+            var pstmt = dbConn.prepareStatement("UPDATE videos SET title = ?, description = ? WHERE videoId = ?;");
+            pstmt.setInt(3, videoId);
+            if(edit.name.isPresent()){
+                pstmt.setString(1, edit.name.orElse(originalMetadata.title));
+            } else{
+                pstmt.setString(1, originalMetadata.title);
+            }
+            if(edit.description.isPresent()){
+                pstmt.setString(2, edit.description.orElse(originalMetadata.description));
+            } else{
+                pstmt.setString(2, originalMetadata.description);
+            }
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     public void deleteVideo(int videoId, Session session) throws InvalidVideoIdException, ForeignChannelIdException {

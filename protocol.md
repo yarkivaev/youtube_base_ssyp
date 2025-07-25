@@ -59,19 +59,19 @@ channelinfo = [string - name] [string - description] [u32 - subscribers] [u32 - 
 если успешно: **S->C**: 0x02 [u32 - video id]
 
 ### 0x06 - удалить видео
-**С->S**: 0x0B [string - token] [u32 - video id]
+**С->S**: 0x06 [string - token] [u32 - video id]
 
 если успешно: **S->C**: 0x00
 
 если нет такого видео или он принадлежит другому пользователю: **S->C**: 0x01
 
 ### 0x07 - получить информацию о канале
-**C->S**: 0x08 [u32 - channel id]
+**C->S**: 0x07 [u32 - channel id]
 
 **S->C**: [channelinfo] 
 
 ### 0x08 - создать канал
-**C->S**: 0x09 [string - token] [string - name] [string - description]
+**C->S**: 0x08 [string - token] [string - name] [string - description]
 
 если успешно: **S->C**: 0x00 [u32 - channel id]
 
@@ -84,7 +84,7 @@ channelinfo = [string - name] [string - description] [u32 - subscribers] [u32 - 
 (например если имя или описание пустое)
 
 ### 0x09 - удалить канал
-**С->S**: 0x0B [string - token] [u32 - channel id]
+**С->S**: 0x09 [string - token] [u32 - channel id]
 
 если успешно: **S->C**: 0x00
 
@@ -102,7 +102,7 @@ channelinfo = [string - name] [string - description] [u32 - subscribers] [u32 - 
 если номер стартового видео или кол-во видео не подходят: **S->C**: 0x02
 
 ### 0x0B - подписаться на канал
-**C->S**: 0x0C [string - token] [u32 - channel id]
+**C->S**: 0x0B [string - token] [u32 - channel id]
 
 если успешно: **S->C**: 0x00
 
@@ -116,3 +116,34 @@ channelinfo = [string - name] [string - description] [u32 - subscribers] [u32 - 
 если нет такого канала: **S->C**: 0x01
 
 пользователь не подписан на канал: **S->C**: 0x02
+
+### 0x0D - редактировать информацию о видео
+**C->S**: 0x0D [string - token] [u32 - video id] [u8 - edit description] [edit data: [string - title] (if needed) [string - description] (if needed) [u64 - file size] [file bytes] (if needed)]
+
+**S->C**:
+- Если данные видео не редактируются:
+    - успешно: 0х00
+    - нет доступа (или неверный токен): 0х01
+- Если данные видео редактируются:
+    - пока обрабатывается: 0x00 [u8 - progress]
+    - нет доступа (или неверный токен): 0х01
+    - После обработки:
+    - 0х02: ошибка обработки
+
+Обозначение изменений в edit description:
+
+Бит 7 (**0x80**) - редактирование заголовок
+
+Бит 6 (**0x40**) - редактирование описания
+
+Бит 5 (**0x20**) - редактирование (повторная загрузка) данных
+
+биты 4-0 зарезервированы
+
+Возможно редактирование нескольких полей одновременно, для этого сложите необходимые сигналы.
+
+Например: отредактировать название и описание = бит 1 + бит 2 = _0x08 + 0x04 = 0xC0_
+
+Данные передаются в порядке: **заголовок -> описание -> видео**, с пропуском при необходимости
+
+Название и описание передаются как строки, файл как [u64 - file size] [file bytes]
