@@ -1,5 +1,6 @@
 package ru.ssyp.youtube;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +16,7 @@ import ru.ssyp.youtube.password.DummyPassword;
 import ru.ssyp.youtube.sqlite.*;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
 import ru.ssyp.youtube.users.*;
+import ru.ssyp.youtube.video.InvalidVideoIdException;
 import ru.ssyp.youtube.video.Video;
 import ru.ssyp.youtube.video.VideoMetadata;
 import ru.ssyp.youtube.video.Videos;
@@ -59,7 +61,7 @@ public class SegmentatedYoutubeTest {
         this.videoSegmentAmount = new HashMap<>();
         Connection conn = DriverManager.getConnection("jdbc:sqlite::memory:");
         db = new SqliteDatabase(conn);
-        this.videoSegments = new MemoryVideoSegments(videoSegmentAmount);
+        this.videoSegments = new MemoryVideoSegments(db);
         this.videos = new SqliteVideos(db, videoSegments);
         this.youtube = new SegmentatedYoutube(
                 new FakeStorage(
@@ -67,7 +69,7 @@ public class SegmentatedYoutubeTest {
                 ),
                 Paths.get("ffmpeg"),
                 new MemoryVideoSegments(
-                        videoSegmentAmount
+                        db
                 ),
                 videos
         );
@@ -79,18 +81,16 @@ public class SegmentatedYoutubeTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"sample-15s.mp4" ,"totally-different-sample-15s.mp4"})
-    public void testUpload(String name) throws IOException, InterruptedException, InvalidChannelIdException {
+    public void testUpload(String name) throws IOException, InterruptedException, InvalidChannelIdException, SQLException, InvalidVideoIdException, ForeignChannelIdException {
         System.out.println(tempDirWithPrefix);
-        Video video = this.youtube.upload(
-                new FakeUser(),
+        Video video = youtube.upload(
+                session,
                 VideoMetadata.fakeMetadata(name, channel.channelInfo().id()),
                 new FileInputStream(Paths.get("src", "test", "resources", name).toFile())
         );
         System.out.println(this.savedVideos);
         assertEquals(24, savedVideos.size());
-        assertEquals(8, videoSegmentAmount.get(video.id));
-//        System.out.println(videoSegmentAmount);
-        System.out.println(videoSegmentAmount);
+        assertEquals(8, video.segmentAmount.get());
 
         HashSet set = new HashSet();
         for (var i: savedVideos.values()){
@@ -100,10 +100,13 @@ public class SegmentatedYoutubeTest {
         }
         assertEquals(savedVideos.size(), set.size());
         savedVideos.clear();
+
+        youtube.remove(video.id, session);
+        Assertions.assertThrows(InvalidVideoIdException.class, () -> youtube.remove(video.id, session));
     }
 
     @Test
-    public void testUploadTwice() throws IOException, InterruptedException, InvalidChannelIdException {
+    public void testUploadTwice() throws IOException, InterruptedException, InvalidChannelIdException, SQLException, InvalidVideoIdException, ForeignChannelIdException {
         testUpload("sample-15s.mp4");
         testUpload("totally-different-sample-15s.mp4");
     }

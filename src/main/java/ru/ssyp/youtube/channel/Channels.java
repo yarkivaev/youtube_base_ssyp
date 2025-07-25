@@ -10,4 +10,6 @@ public interface Channels {
     Channel addNew(Session session, String name, String description) throws InvalidChannelNameException, InvalidChannelDescriptionException;
 
     void removeChannel(Session session, int channelId) throws InvalidChannelIdException, ForeignChannelIdException;
+
+    Channel[] getUserChannel(int userId);
 }

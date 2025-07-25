@@ -1,4 +1,16 @@
 package ru.ssyp.youtube.server;
+import ru.ssyp.youtube.IntCodec;
+import ru.ssyp.youtube.ScreamingYoutube;
+import ru.ssyp.youtube.Youtube;
+import ru.ssyp.youtube.channel.InvalidChannelIdException;
+import ru.ssyp.youtube.sqlite.SqliteDatabase;
+import ru.ssyp.youtube.sqlite.SqliteUsers;
+import ru.ssyp.youtube.token.TokenGenRandomB64;
+import ru.ssyp.youtube.users.InvalidTokenException;
+// import ru.ssyp.youtube.users.MemoryUsers;
+import ru.ssyp.youtube.users.Users;
+import ru.ssyp.youtube.video.InvalidVideoIdException;
+
 
 import ru.ssyp.youtube.*;
 import ru.ssyp.youtube.channel.*;
@@ -41,8 +53,7 @@ public class Server {
         this.users = users;
         this.channels = channels;
     }
-
-    public void serve() throws IOException, InvalidTokenException {
+    public void serve() throws IOException, InvalidTokenException, SQLException, InvalidVideoIdException, InvalidChannelIdException {
         /*
          * todo Читаем в цикле данные, которые нам шлёт клиент. Клиент отправляет команды.
          * После каждой команды клиент отправляет флаг, о том, что команда отправленна.
@@ -204,7 +215,7 @@ public class Server {
                         throw new RuntimeException("invalid command received");
                     }
                 }
-            } catch (IOException | InvalidTokenException e) {
+            } catch (IOException | InvalidTokenException | InvalidVideoIdException | InvalidChannelIdException e) {
                 throw new RuntimeException(e);
             } finally {
                 try {
@@ -217,7 +228,7 @@ public class Server {
         }
     }
 
-    public static void main(String[] args) throws SQLException, IOException, InvalidTokenException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InterruptedException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidChannelDescriptionException, InvalidChannelNameException, InvalidChannelIdException {
+    public static void main(String[] args) throws SQLException, IOException, InvalidTokenException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InterruptedException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidChannelDescriptionException, InvalidChannelNameException, InvalidChannelIdException, InvalidVideoIdException {
         System.out.println("Starting the server");
         ServerSocket serverSocket = new ServerSocket(8080);
         PreparedDatabase db = new SqliteDatabase(
@@ -228,7 +239,7 @@ public class Server {
                 new TokenGenRandomB64(20)
         );
         Channels channels = new SqliteChannels(db);
-        VideoSegments segments = new MemoryVideoSegments(new HashMap<>());
+        VideoSegments segments = new MemoryVideoSegments(db);
         Videos videos = new SqliteVideos(db, segments);
         Youtube youtube = new ServerYoutube(
                 new SegmentatedYoutube(

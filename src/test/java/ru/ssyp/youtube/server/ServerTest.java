@@ -8,6 +8,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import ru.ssyp.youtube.IntCodec;
 import ru.ssyp.youtube.ScreamingYoutube;
+import ru.ssyp.youtube.channel.InvalidChannelIdException;
+
 import ru.ssyp.youtube.StringCodec;
 import ru.ssyp.youtube.channel.Channels;
 import ru.ssyp.youtube.password.DummyPassword;
@@ -18,6 +20,7 @@ import ru.ssyp.youtube.sqlite.SqliteDatabase;
 import ru.ssyp.youtube.token.Token;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
 import ru.ssyp.youtube.users.*;
+import ru.ssyp.youtube.video.InvalidVideoIdException;
 import ru.ssyp.youtube.video.VideoMetadata;
 
 import java.io.*;
@@ -65,7 +68,8 @@ public class ServerTest {
                                     users,
                                     channels
                             ).serve();
-                        } catch (IOException | InvalidTokenException e) {
+                        } catch (IOException | InvalidTokenException | SQLException | InvalidVideoIdException |
+                                 InvalidChannelIdException e) {
                             throw new RuntimeException(e);
                         }
                     }

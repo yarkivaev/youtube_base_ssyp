@@ -8,6 +8,7 @@ import ru.ssyp.youtube.video.VideoMetadata;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 
 public class UploadVideoCommand implements Command {
 

@@ -2,7 +2,7 @@ package ru.ssyp.youtube.server;
 
 import ru.ssyp.youtube.channel.Channel;
 
-import java.io.InputStream;
+import java.io.*;
 
 public class GetChannelVideosCommand implements Command {
 
@@ -19,7 +19,13 @@ public class GetChannelVideosCommand implements Command {
     }
 
     @Override
-    public InputStream act() throws RuntimeException {
-        return null;
+    public InputStream act() throws RuntimeException, IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeObject(channel.videos(startVideo, count));
+        oos.flush();
+        byte[] objectBytes = bos.toByteArray();
+
+        return new ByteArrayInputStream(objectBytes);
     }
 }

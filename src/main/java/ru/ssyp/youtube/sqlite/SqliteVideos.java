@@ -71,7 +71,13 @@ public class SqliteVideos implements Videos {
             return new Video(
                     videoId,
                     metadata,
-                    () -> videoSegments.getSegmentAmount(videoId),
+                    () -> {
+                        try {
+                            return videoSegments.getSegmentsAmount(videoId);
+                        } catch (SQLException | InvalidVideoIdException e) {
+                            throw new RuntimeException(e);
+                        }
+                    },
                     (short)2,
                     Quality.fromPriority(3),
                     rs.getString("owner")
@@ -83,16 +89,17 @@ public class SqliteVideos implements Videos {
     }
 
     @Override
-    public Video video(int videoId) {
-        Connection dbConn = db.conn();
-        int segments = videoSegments.getSegmentAmount(videoId);
-        //int segments = 0;
-        short segmentLength = 2;
-        var sql = """
-        SELECT owner, title, description, maxQuality FROM videos WHERE "videoId" = ?
-        """;
-
+    public Video video(int videoId) throws InvalidVideoIdException {
         try {
+            Connection dbConn = db.conn();
+            int segments = videoSegments.getSegmentsAmount(videoId);
+            //int segments = 0;
+            short segmentLength = 2;
+            var sql = """
+            SELECT owner, title, description, maxQuality FROM videos WHERE "videoId" = ?
+            """;
+
+
             var pstmt = dbConn.prepareStatement(sql);
             pstmt.setInt(1, videoId);
             var rs = pstmt.executeQuery();
@@ -138,7 +145,13 @@ public class SqliteVideos implements Videos {
                 videos.add(new Video(
                         videoId,
                         new VideoMetadata(title, description, channelId),
-                        () -> videoSegments.getSegmentAmount(videoId),
+                        () -> {
+                            try {
+                                return videoSegments.getSegmentsAmount(videoId);
+                            } catch (SQLException | InvalidVideoIdException e) {
+                                throw new RuntimeException(e);
+                            }
+                        },
                         (short) 2,
                         Quality.fromPriority(maxQuality),
                         owner
