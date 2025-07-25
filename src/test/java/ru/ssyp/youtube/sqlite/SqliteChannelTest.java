@@ -3,7 +3,9 @@ package ru.ssyp.youtube.sqlite;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.ssyp.youtube.*;
+import ru.ssyp.youtube.FileStorage;
+import ru.ssyp.youtube.MemoryVideoSegments;
+import ru.ssyp.youtube.SegmentatedYoutube;
 import ru.ssyp.youtube.channel.*;
 import ru.ssyp.youtube.password.DummyPassword;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
@@ -13,8 +15,6 @@ import ru.ssyp.youtube.video.VideoMetadata;
 import ru.ssyp.youtube.video.Videos;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -24,6 +24,7 @@ import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SqliteChannelTest {
+    private PreparedDatabase db;
     private Channels channels;
     private Channel channel;
     private Session session1;
@@ -32,15 +33,13 @@ public class SqliteChannelTest {
     @BeforeEach
     void setUp() throws SQLException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidTokenException, InvalidChannelDescriptionException, InvalidChannelNameException, AlreadySubscribedException, InvalidUserIdException {
         Connection conn = DriverManager.getConnection("jdbc:sqlite::memory:");
-        PreparedDatabase db = new SqliteDatabase(conn);
+        db = new SqliteDatabase(conn);
         channels = new SqliteChannels(db);
         Users users = new SqliteUsers(db, new TokenGenRandomB64(20));
         session1 = users.getSession(users.addUser("test_user_1", new DummyPassword("test_value_1")));
         session2 = users.getSession(users.addUser("test_user_2", new DummyPassword("test_value_2")));
         channel = channels.addNew(session1, "name", "description");
         channel = channels.addNew(session1, "name1", "description1");
-
-
     }
 
     @Test
@@ -67,7 +66,7 @@ public class SqliteChannelTest {
     }
 
     @Test
-    void videosTest() throws InvalidChannelIdException, IOException, InterruptedException {
+    void videosTest() throws Exception {
         MemoryVideoSegments videoSegments = new MemoryVideoSegments(db);
         Videos videos = new SqliteVideos(db, videoSegments);
         FileStorage fileStorage = new FileStorage();
@@ -86,7 +85,7 @@ public class SqliteChannelTest {
         Video[] videoList = channel.videos(1, 1);
         System.out.println(Arrays.toString(videoList));
         System.out.println(videoList.length);
-        for (Video video: videoList){
+        for (Video video : videoList) {
             System.out.println(video.metadata.title);
         }
     }

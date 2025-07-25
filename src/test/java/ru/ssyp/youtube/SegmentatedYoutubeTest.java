@@ -34,26 +34,18 @@ public class SegmentatedYoutubeTest {
     private Youtube youtube;
     private Map<String, FakeStorage.SavedVideo> savedVideos;
     private Path tempDirWithPrefix;
-    private Map<Integer, Integer> videoSegmentAmount;
+    private Session session;
     private Channel channel;
 
     @BeforeEach
     public void before() throws IOException, SQLException, InvalidChannelDescriptionException, InvalidChannelNameException, InvalidPasswordException, InvalidUsernameException, UsernameTakenException, InvalidTokenException {
         savedVideos = new HashMap<>();
         tempDirWithPrefix = Files.createTempDirectory("segmentated_youtube_test");
-        videoSegmentAmount = new HashMap<>();
         Connection conn = DriverManager.getConnection("jdbc:sqlite::memory:");
-<<<<<<< HEAD
         PreparedDatabase db = new SqliteDatabase(conn);
-        VideoSegments videoSegments = new MemoryVideoSegments(videoSegmentAmount);
+        VideoSegments videoSegments = new MemoryVideoSegments(db);
         Videos videos = new SqliteVideos(db, videoSegments);
         youtube = new SegmentatedYoutube(
-=======
-        db = new SqliteDatabase(conn);
-        this.videoSegments = new MemoryVideoSegments(db);
-        this.videos = new SqliteVideos(db, videoSegments);
-        this.youtube = new SegmentatedYoutube(
->>>>>>> master
                 new FakeStorage(
                         savedVideos
                 ),
@@ -65,35 +57,22 @@ public class SegmentatedYoutubeTest {
         );
         Users users = new SqliteUsers(db, new TokenGenRandomB64(20));
         Channels channels = new SqliteChannels(db);
-        Session session = users.getSession(users.addUser("testUser", new DummyPassword("hello")));
+        session = users.getSession(users.addUser("testUser", new DummyPassword("hello")));
         channel = channels.addNew(session, "testChannel", "testChannelDescription");
     }
 
     @ParameterizedTest
-<<<<<<< HEAD
     @ValueSource(strings = {"sample-15s.mp4", "totally-different-sample-15s.mp4"})
-    public void testUpload(String name) throws IOException, InterruptedException, InvalidChannelIdException {
-        System.out.println(tempDirWithPrefix);
-        Video video = youtube.upload(
-                new FakeUser(),
-=======
-    @ValueSource(strings = {"sample-15s.mp4" ,"totally-different-sample-15s.mp4"})
-    public void testUpload(String name) throws IOException, InterruptedException, InvalidChannelIdException, SQLException, InvalidVideoIdException, ForeignChannelIdException {
+    public void testUpload(String name) throws IOException, InterruptedException, InvalidChannelIdException, InvalidVideoIdException, ForeignChannelIdException {
         System.out.println(tempDirWithPrefix);
         Video video = youtube.upload(
                 session,
->>>>>>> master
                 VideoMetadata.fakeMetadata(name, channel.channelInfo().id()),
                 new FileInputStream(Paths.get("src", "test", "resources", name).toFile())
         );
         System.out.println(savedVideos);
         assertEquals(24, savedVideos.size());
-<<<<<<< HEAD
-        assertEquals(8, videoSegmentAmount.get(video.id));
-        System.out.println(videoSegmentAmount);
-=======
         assertEquals(8, video.segmentAmount.get());
->>>>>>> master
 
         HashSet<FakeStorage.SavedVideo> set = new HashSet<>();
         for (FakeStorage.SavedVideo i : savedVideos.values()) {
@@ -109,11 +88,7 @@ public class SegmentatedYoutubeTest {
     }
 
     @Test
-<<<<<<< HEAD
     public void testUploadTwice() throws Exception {
-=======
-    public void testUploadTwice() throws IOException, InterruptedException, InvalidChannelIdException, SQLException, InvalidVideoIdException, ForeignChannelIdException {
->>>>>>> master
         testUpload("sample-15s.mp4");
         testUpload("totally-different-sample-15s.mp4");
     }

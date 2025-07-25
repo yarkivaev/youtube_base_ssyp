@@ -11,5 +11,5 @@ public interface Channels {
 
     Channel[] getUserChannel(int userId);
 
-    public Channel[] getAllChannel();
+    Channel[] getAllChannel();
 }

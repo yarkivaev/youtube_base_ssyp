@@ -97,12 +97,12 @@ public class SqliteChannels implements Channels {
     }
 
     @Override
-    public Channel[] getAllChannel(){
+    public Channel[] getAllChannel() {
         try {
             PreparedStatement selectStatement = db.conn().prepareStatement("SELECT id FROM channels;");
             ResultSet rs = selectStatement.executeQuery();
             List<Channel> channels = new ArrayList<>();
-            while (rs.next()){
+            while (rs.next()) {
                 int channelId = rs.getInt(1);
                 channels.add(channel(channelId));
             }

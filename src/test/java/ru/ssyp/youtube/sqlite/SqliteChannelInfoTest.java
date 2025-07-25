@@ -9,16 +9,11 @@ import ru.ssyp.youtube.channel.*;
 import ru.ssyp.youtube.password.DummyPassword;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
 import ru.ssyp.youtube.users.*;
-<<<<<<< HEAD
-=======
-import ru.ssyp.youtube.video.InvalidVideoIdException;
 import ru.ssyp.youtube.video.Video;
->>>>>>> master
 import ru.ssyp.youtube.video.VideoMetadata;
 import ru.ssyp.youtube.video.Videos;
 
 import java.sql.*;
-import java.util.HashMap;
 
 public class SqliteChannelInfoTest {
     private Channel channel;
@@ -41,11 +36,7 @@ public class SqliteChannelInfoTest {
         ResultSet rs = selectStatement.executeQuery();
         int channelId = rs.getInt("id");
         channelInfo = new SqliteChannelInfo(channelId, db);
-<<<<<<< HEAD
-        VideoSegments videoSegments = new MemoryVideoSegments(new HashMap<>());
-=======
-        videoSegments =  new MemoryVideoSegments(db);
->>>>>>> master
+        VideoSegments videoSegments = new MemoryVideoSegments(db);
         videos = new SqliteVideos(new SqliteDatabase(conn), videoSegments);
     }
 

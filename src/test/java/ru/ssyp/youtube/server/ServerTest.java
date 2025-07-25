@@ -16,15 +16,10 @@ import ru.ssyp.youtube.sqlite.SqliteChannels;
 import ru.ssyp.youtube.sqlite.SqliteDatabase;
 import ru.ssyp.youtube.token.Token;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
-<<<<<<< HEAD
 import ru.ssyp.youtube.users.InvalidTokenException;
 import ru.ssyp.youtube.users.MemoryUsers;
 import ru.ssyp.youtube.users.Users;
-=======
-import ru.ssyp.youtube.users.*;
 import ru.ssyp.youtube.video.InvalidVideoIdException;
-import ru.ssyp.youtube.video.VideoMetadata;
->>>>>>> master
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -42,11 +37,10 @@ public class ServerTest {
     private Socket clientSocket;
     private InputStream clientInput;
     private OutputStream clientOutput;
-
     private Channels channels;
 
     @BeforeEach
-    void beforeEach() throws IOException, InvalidTokenException, SQLException {
+    void beforeEach() throws IOException, SQLException {
         serverSocket = new ServerSocket(8080);
         users = new MemoryUsers(
                 new HashMap<>(),
@@ -56,7 +50,6 @@ public class ServerTest {
         );
         channels = new SqliteChannels(new SqliteDatabase(DriverManager.getConnection("jdbc:sqlite::memory:")));
         new Thread(
-<<<<<<< HEAD
                 () -> {
                     try {
                         new Server(
@@ -65,24 +58,9 @@ public class ServerTest {
                                 users,
                                 channels
                         ).serve();
-                    } catch (IOException | InvalidTokenException e) {
+                    } catch (IOException | InvalidTokenException | SQLException | InvalidVideoIdException |
+                             InvalidChannelIdException e) {
                         throw new RuntimeException(e);
-=======
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            new Server(
-                                    serverSocket,
-                                    new ScreamingYoutube(),
-                                    users,
-                                    channels
-                            ).serve();
-                        } catch (IOException | InvalidTokenException | SQLException | InvalidVideoIdException |
-                                 InvalidChannelIdException e) {
-                            throw new RuntimeException(e);
-                        }
->>>>>>> master
                     }
                 }
         ).start();
