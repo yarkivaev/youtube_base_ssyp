@@ -145,7 +145,13 @@ public class SqliteVideos implements Videos {
                 videos.add(new Video(
                         videoId,
                         new VideoMetadata(title, description, channelId),
-                        () -> videoSegments.getSegmentAmount(videoId),
+                        () -> {
+                            try {
+                                return videoSegments.getSegmentsAmount(videoId);
+                            } catch (SQLException | InvalidVideoIdException e) {
+                                throw new RuntimeException(e);
+                            }
+                        },
                         (short) 2,
                         Quality.fromPriority(maxQuality),
                         owner

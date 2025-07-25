@@ -6,10 +6,11 @@ import ru.ssyp.youtube.channel.InvalidChannelNameException;
 import ru.ssyp.youtube.users.InvalidTokenException;
 import ru.ssyp.youtube.video.InvalidVideoIdException;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 
 public interface Command {
 
-    InputStream act() throws RuntimeException   , InvalidVideoIdException, InvalidChannelIdException;
+    InputStream act() throws RuntimeException, InvalidVideoIdException, InvalidChannelIdException, IOException;
 }

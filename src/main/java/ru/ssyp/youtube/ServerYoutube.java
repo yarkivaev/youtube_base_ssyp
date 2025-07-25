@@ -2,6 +2,7 @@ package ru.ssyp.youtube;
 
 import ru.ssyp.youtube.channel.InvalidChannelIdException;
 import ru.ssyp.youtube.users.Session;
+import ru.ssyp.youtube.video.InvalidVideoIdException;
 import ru.ssyp.youtube.video.Video;
 import ru.ssyp.youtube.video.VideoMetadata;
 import ru.ssyp.youtube.video.Videos;
@@ -23,7 +24,11 @@ public class ServerYoutube implements Youtube {
 
     @Override
     public Video videoInfo(int videoId) {
-        return videos.video(videoId);
+        try {
+            return videos.video(videoId);
+        } catch (InvalidVideoIdException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -43,6 +48,10 @@ public class ServerYoutube implements Youtube {
 
     @Override
     public InputStream load(int videoId, int startSegment, int resolution) {
-        return youtube.load(videoId, startSegment, resolution);
+        try {
+            return youtube.load(videoId, startSegment, resolution);
+        } catch (InvalidVideoIdException | InvalidChannelIdException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
