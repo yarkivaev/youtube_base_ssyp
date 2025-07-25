@@ -17,7 +17,7 @@ public class MemoryVideoSegments implements VideoSegments {
     }
 
     @Override
-    public Integer getSegmentAmount(int videoId) {
+    public int getSegmentAmount(int videoId) {
         return videoSegmentAmount.get(videoId);
     }
 

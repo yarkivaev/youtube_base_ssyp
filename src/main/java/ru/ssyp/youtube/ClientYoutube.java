@@ -5,16 +5,14 @@ import ru.ssyp.youtube.video.Quality;
 import ru.ssyp.youtube.video.Video;
 import ru.ssyp.youtube.video.VideoMetadata;
 import ru.ssyp.youtube.video.Videos;
-
-import java.io.DataOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.io.*;
 import java.io.InputStream;
 import java.net.Socket;
-import java.io.DataInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class ClientYoutube implements Youtube {
 
@@ -42,6 +40,7 @@ public class ClientYoutube implements Youtube {
             int segmentAmount;
             short segmentLength;
             int priority;
+            int chennelId;
             String author;
 
             byte[] intBuffer = new byte[4];
@@ -59,15 +58,18 @@ public class ClientYoutube implements Youtube {
             priority = IntCodec.byteToInt(intBuffer);
             input.read(intBuffer);
             id = IntCodec.byteToInt(intBuffer);
+            input.read(intBuffer);
+            chennelId = IntCodec.byteToInt(intBuffer);
 
 
             return new Video(
                     videoId,
                     new VideoMetadata(
                             title,
-                            description
+                            description,
+                            chennelId
                     ),
-                    segmentAmount,
+                    () -> segmentAmount,
                     segmentLength,
                     Quality.fromPriority(priority),
                     author
@@ -84,9 +86,9 @@ public class ClientYoutube implements Youtube {
             clientSocketStream.write(new byte[]{0x02});
 
             int id;
+            int chennelId;
             String title;
             String description;
-            int segmentAmount;
             short segmentLength;
             int priority;
             String author;
@@ -102,7 +104,7 @@ public class ClientYoutube implements Youtube {
             for (int i = 0; i<videoCount; i++) {
 
                 input.read(intBuffer);
-                segmentAmount = IntCodec.byteToInt(intBuffer);
+                final int segmentAmount = IntCodec.byteToInt(intBuffer);
                 input.read(shortBuffer);
                 segmentLength = IntCodec.byteToInt_1(shortBuffer);
                 title = StringCodec.streamToString(input);
@@ -114,13 +116,16 @@ public class ClientYoutube implements Youtube {
                 id = IntCodec.byteToInt(intBuffer);
                 input.read(shortBuffer);
                 videoCount = IntCodec.byteToInt_1(shortBuffer);
+                input.read(intBuffer);
+                chennelId = IntCodec.byteToInt(intBuffer);
                 videosList.add(new Video(
                         id,
                         new VideoMetadata(
                                 title,
-                                description
+                                description,
+                                chennelId
                         ),
-                        segmentAmount,
+                        () -> segmentAmount,
                         segmentLength,
                         Quality.fromPriority(priority),
                         author
@@ -133,31 +138,41 @@ public class ClientYoutube implements Youtube {
     }
 
     @Override
-    public void upload(Session token, VideoMetadata str, InputStream stream) throws IOException, InterruptedException {
+    public Video upload(Session token, VideoMetadata str, InputStream stream) throws IOException, InterruptedException {
         try {
             OutputStream clientSocketStream = clientSocket.getOutputStream();
             clientSocketStream.write(new byte[]{0x05});
+            clientSocketStream.write(token.username().getBytes());
+            int channelId = str.channelId;
             String title = str.title;
             String description = str.description;
+            clientSocketStream.write(channelId);
+            clientSocketStream.write(title.getBytes());
+            clientSocketStream.write(description.getBytes());
             File my_file_x = new File("C:\\Users\\programmer");
-            FileOutputStream my_file = new FileOutputStream("C:\\\\Users\\\\programmer");
+            FileOutputStream my_file = new FileOutputStream(my_file_x);
             byte[] part = stream.readNBytes(1024 * 1024);
             my_file.write(part);
-            int part_length = 1024*1024;
-            clientSocketStream.write(StringCodec.stringToStream(token.username()));
-            clientSocketStream.write(StringCodec.stringToStream(title));
-            clientSocketStream.write(StringCodec.stringToStream(description));
-            clientSocketStream.write(StringCodec.stringToStream(part.toString()));
+            int part_length = 1024 * 1024;
+
             while (part.toString().isEmpty()) {
-                part = stream.readNBytes(1024*1024);
+                part = stream.readNBytes(1024 * 1024);
                 my_file.write(part);
-                part_length+=1024*1024;
+                part_length += part.length;
             }
-            FileInputStream my_file_d = new FileInputStream("C:\\\\Users\\\\programmer");
+
+            FileInputStream my_file_d = new FileInputStream(my_file_x);
             clientSocketStream.write(part_length);
             while (part.toString().isEmpty()) {
-                clientSocketStream.write(my_file_d.readNBytes(1024*1024));
+                part = my_file_d.readNBytes(1024 * 1024);
+                clientSocketStream.write(part);
             }
+            InputStream clientSocketInputStream = clientSocket.getInputStream();
+            int id = IntCodec.byteToInt(clientSocketInputStream.readAllBytes());
+            clientSocketStream.write(0x00);
+            String[] videoinfo = clientSocketInputStream.readAllBytes().toString().split(Pattern.quote(", "));
+            return new Video(id, str, () -> IntCodec.byteToInt(videoinfo[1].getBytes()), (short) IntCodec.byteToInt(videoinfo[2].getBytes()), Quality.fromPriority(IntCodec.byteToInt(videoinfo[4].getBytes())), videoinfo[5]);
+
         } catch (java.io.IOException e) {
             String i = "да как так то :(";
             System.out.println(i);
@@ -181,5 +196,4 @@ public class ClientYoutube implements Youtube {
             throw new RuntimeException(e);
         }
     }
-
 }

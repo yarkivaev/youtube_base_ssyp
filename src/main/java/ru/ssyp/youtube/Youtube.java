@@ -1,5 +1,6 @@
 package ru.ssyp.youtube;
 
+import ru.ssyp.youtube.channel.InvalidChannelIdException;
 import ru.ssyp.youtube.password.Password;
 import ru.ssyp.youtube.users.Session;
 import ru.ssyp.youtube.video.Video;
@@ -15,7 +16,7 @@ public interface Youtube {
 
     Video[] videos();
 
-    void upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException;
+    Video upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException, InvalidChannelIdException;
 
     /*
      * Отправляет поток данных видео, начиная с startSec секунды

@@ -1,5 +1,8 @@
 package ru.ssyp.youtube.server;
 
+
+import ru.ssyp.youtube.Youtube;
+import ru.ssyp.youtube.video.Quality;
 import ru.ssyp.youtube.IntCodec;
 import ru.ssyp.youtube.Youtube;
 import ru.ssyp.youtube.video.Quality;
@@ -12,8 +15,10 @@ import java.io.IOException;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.io.InputStream;
 
-public class ListVideosCommand implements Command{
+
+public class ListVideosCommand implements Command {
 
     private final Youtube youtube;
 
@@ -25,20 +30,20 @@ public class ListVideosCommand implements Command{
     public InputStream act() {
         Video[] videos = youtube.videos();
         return new SequenceInputStream(
-            new ByteArrayInputStream(IntCodec.intToByte(videos.length)),
-            new SequenceInputStream(
-                Collections.enumeration(
-                    Arrays.asList(videos).stream()
-                        .map(v -> {
-                            try {
-                                return v.rawContent();
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        })
-                        .toList()
-                    )
-            )
+                new ByteArrayInputStream(IntCodec.intToByte(videos.length)),
+                new SequenceInputStream(
+                        Collections.enumeration(
+                                Arrays.asList(videos).stream()
+                                        .map(v -> {
+                                            try {
+                                                return v.rawContent();
+                                            } catch (IOException e) {
+                                                throw new RuntimeException(e);
+                                            }
+                                        })
+                                        .toList()
+                        )
+                )
         );
     }
 }
