@@ -106,12 +106,6 @@ public class Server {
                         outputStream.write(command.act().readAllBytes());
                     } else if (intCommand == 0x01) {
                         inputStream.read(intByteBuffer);
-                        int videoId = IntCodec.byteToInt(intByteBuffer);
-                        command = new GetVideoInfoCommand(videoId, youtube);
-                        outputStream.write(command.act().readAllBytes());
-                    }
-                    if (intCommand == 0x01) {
-                        inputStream.read(intByteBuffer);
                         int videoId = byteToInt(intByteBuffer);
 
                         inputStream.read(intByteBuffer);
@@ -127,25 +121,19 @@ public class Server {
                     } else if (intCommand == 0x02) {
                         command = new ListVideosCommand(youtube);
                         outputStream.write(command.act().readAllBytes());
-                    } else {
-                        // защита от подлянок
-                        throw new RuntimeException("invalid command received");
-                    }
-                    if (intCommand == 0x03) {
+                    } else if (intCommand == 0x03) {
                         String username = StringCodec.streamToString(inputStream);
                         String password = StringCodec.streamToString(inputStream);
                         command = new LoginCommand(username, new PbkdfPassword(password), users);
                         outputStream.write(new byte[]{0x00});
                         outputStream.write(command.act().readAllBytes());
-                    }
-                    if (intCommand == 0x04) {
+                    } else if (intCommand == 0x04) {
                         String username = StringCodec.streamToString(inputStream);
                         String password = StringCodec.streamToString(inputStream);
                         command = new CreateUserCommand(username, new PbkdfPassword(password), users);
                         outputStream.write(new byte[]{0x00});
                         outputStream.write(command.act().readAllBytes());
-                    }
-                    if (intCommand == 0x05) {
+                    } else if (intCommand == 0x05) {
                         String token = StringCodec.streamToString(inputStream);
                         inputStream.read(intByteBuffer);
                         int channelId = IntCodec.byteToInt(intByteBuffer);
@@ -161,8 +149,7 @@ public class Server {
                                 youtube
                         );
                         command.act();
-                    }
-                    if (intCommand == 0x06) {
+                    } else if (intCommand == 0x06) {
                         String token = StringCodec.streamToString(inputStream);
                         inputStream.read(intByteBuffer);
                         int videoId = IntCodec.byteToInt(intByteBuffer);
@@ -174,14 +161,12 @@ public class Server {
                                 youtube
                         );
                         command.act();
-                    }
-                    if (intCommand == 0x07) {
+                    } else if (intCommand == 0x07) {
                         inputStream.read(intByteBuffer);
                         int channelId = IntCodec.byteToInt(intByteBuffer);
                         command = new GetChannelInfoCommand(channelId, channels);
                         command.act();
-                    }
-                    if (intCommand == 0x08) {
+                    } else if (intCommand == 0x08) {
                         String token = StringCodec.streamToString(inputStream);
                         String channelname = StringCodec.streamToString(inputStream);
                         String description = StringCodec.streamToString(inputStream);
@@ -192,8 +177,7 @@ public class Server {
                                 channels
                         );
                         command.act();
-                    }
-                    if (intCommand == 0x09) {
+                    } else if (intCommand == 0x09) {
                         String token = StringCodec.streamToString(inputStream);
                         inputStream.read(intByteBuffer);
                         int Id = IntCodec.byteToInt(intByteBuffer);
@@ -203,8 +187,7 @@ public class Server {
                                 channels
                         );
                         command.act();
-                    }
-                    if(intCommand == 0x0a){
+                    } else if (intCommand == 0x0a){
                         inputStream.read(intByteBuffer);
                         int channelId = IntCodec.byteToInt(intByteBuffer);
                         inputStream.read(intByteBuffer);
@@ -213,24 +196,24 @@ public class Server {
                         int count = IntCodec.byteToInt(intByteBuffer);
                         command = new GetChannelVideosCommand(channels.channel(channelId),count,startvideo);
 
-                    }
-                    if(intCommand == 0x0b){
+                    } else if (intCommand == 0x0b){
                         inputStream.read(intByteBuffer);
                         String token = StringCodec.streamToString(inputStream);
                         inputStream.read(intByteBuffer);
                         int channelId = IntCodec.byteToInt(intByteBuffer);
                         command = new SubscribeChannelCommand(new Token(token),users,channels.channel(channelId));
                         command.act().readAllBytes();
-                    }
-                    if(intCommand == 0x0c){
+                    } else if (intCommand == 0x0c){
                         inputStream.read(intByteBuffer);
                         String token = StringCodec.streamToString(inputStream);
                         inputStream.read(intByteBuffer);
                         int channelId = IntCodec.byteToInt(intByteBuffer);
                         command = new UnsubscribeChannelCommand(new Token(token),users, channels.channel(channelId));
                         command.act().readAllBytes();
+                    } else {
+                        // защита от подлянок
+                        throw new RuntimeException("invalid command received");
                     }
-
                 }
             } catch (IOException | InvalidTokenException | InvalidVideoIdException | InvalidChannelIdException e) {
                 throw new RuntimeException(e);
