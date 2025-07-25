@@ -4,14 +4,23 @@ import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.ssyp.youtube.*;
 import ru.ssyp.youtube.channel.*;
 import ru.ssyp.youtube.password.DummyPassword;
 import ru.ssyp.youtube.token.TokenGenRandomB64;
 import ru.ssyp.youtube.users.*;
+import ru.ssyp.youtube.video.Video;
+import ru.ssyp.youtube.video.VideoMetadata;
+import ru.ssyp.youtube.video.Videos;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -60,5 +69,30 @@ public class SqliteChannelTest {
         Assertions.assertThrows(AlreadySubscribedException.class, () -> channel.subscribe(session1.userId()));
         channel.unsubscribe(session1.userId());
         Assertions.assertFalse(channel.checkSubscription(session1.userId()));
+    }
+
+    @Test
+    void videosTest() throws SQLException, InvalidChannelIdException, IOException, InterruptedException {
+        MemoryVideoSegments videoSegments = new MemoryVideoSegments(db);
+        Videos videos = new SqliteVideos(db, videoSegments);
+        FileStorage fileStorage = new FileStorage();
+        SegmentatedYoutube segmentatedYoutube = new SegmentatedYoutube(
+                fileStorage,
+                Paths.get("C:\\Users\\programmer\\Downloads\\ffmpeg-2025-07-17-git-bc8d06d541-full_build\\ffmpeg-2025-07-17-git-bc8d06d541-full_build\\bin\\ffmpeg.exe"),
+                videoSegments,
+                videos
+        );
+        segmentatedYoutube.upload(
+                session1,
+                new VideoMetadata("title1", "description1", channel.channelInfo().id()),
+                new FileInputStream(Paths.get("src", "test", "resources", "sample-15s.mp4").toFile())
+        );
+
+        Video[] videoList = channel.videos(1, 1);
+        System.out.println(Arrays.toString(videoList));
+        System.out.println(videoList.length);
+        for (Video video: videoList){
+            System.out.println(video.metadata.title);
+        }
     }
 }

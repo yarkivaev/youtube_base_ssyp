@@ -13,5 +13,5 @@ public interface Channel {
 
     void unsubscribe(int userId) throws SQLException, NotSubscribedException, InvalidUserIdException;
 
-    Video[] videos(int startId, int amount);
+    Video[] videos(int startId, int amount) throws SQLException;
 }

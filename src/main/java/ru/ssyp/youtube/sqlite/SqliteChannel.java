@@ -1,11 +1,16 @@
 package ru.ssyp.youtube.sqlite;
 
 import ru.ssyp.youtube.channel.*;
+import ru.ssyp.youtube.video.Quality;
 import ru.ssyp.youtube.video.Video;
+import ru.ssyp.youtube.video.VideoMetadata;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 
 public class SqliteChannel implements Channel {
 
@@ -18,6 +23,7 @@ public class SqliteChannel implements Channel {
         this.db = db;
         this.sqliteChannelInfo = sqliteChannelInfo;
     }
+
     @Override
     public ChannelInfo channelInfo() {
         return new SqliteChannelInfo(channelId, db);
@@ -28,7 +34,7 @@ public class SqliteChannel implements Channel {
         PreparedStatement selectStatement1 = db.conn().prepareStatement("SELECT * FROM users WHERE id = ?;");
         selectStatement1.setInt(1, userId);
         ResultSet rs1 = selectStatement1.executeQuery();
-        if (!rs1.next()){
+        if (!rs1.next()) {
             throw new InvalidUserIdException();
         }
 
@@ -43,7 +49,7 @@ public class SqliteChannel implements Channel {
 
     @Override
     public void subscribe(int userId) throws SQLException, InvalidUserIdException, AlreadySubscribedException {
-        if (checkSubscription(userId)){
+        if (checkSubscription(userId)) {
             throw new AlreadySubscribedException();
         }
         PreparedStatement insertStatement = db.conn().prepareStatement("INSERT INTO subscribers (user_id, channel_id) VALUES (?, ?);");
@@ -75,8 +81,45 @@ public class SqliteChannel implements Channel {
     }
 
     @Override
-    public Video[] videos(int startId, int amount) {
-        // Implement
-        return new Video[0];
+    public Video[] videos(int startId, int amount) throws SQLException {
+        PreparedStatement selectStatement = db.conn().prepareStatement(
+            """
+            SELECT v.videoId as videoId,
+                   v.owner as owner,
+                   v.title as title,
+                   v.description as description,
+                   v.maxQuality as maxQuality,
+                   cv.channelId as channelId,
+                   vsa.segmentsAmount as segmentsAmount
+            FROM channelsVideos cv
+            JOIN videos v on v.videoId = cv.videoId
+            JOIN videoSegmentsAmount vsa on v.videoId = vsa.videoId
+            WHERE channelId = ?
+            ORDER BY videoId
+            LIMIT ?
+            OFFSET ?;
+            """
+        );
+        selectStatement.setInt(1, sqliteChannelInfo.id());
+        selectStatement.setInt(2, amount);
+        selectStatement.setInt(3, startId - 1);
+        ResultSet rs = selectStatement.executeQuery();
+        List<Video> videos = new ArrayList<>();
+        while (rs.next()) {
+            final int segmentsAmount = rs.getInt("segmentsAmount");
+            videos.add(new Video(
+                    rs.getInt("videoId"),
+                    new VideoMetadata(
+                            rs.getString("title"),
+                            rs.getString("description"),
+                            rs.getInt("channelId")
+                    ),
+                    () -> segmentsAmount,
+                    (short) 2,
+                    Quality.fromPriority(3), // May be a problem
+                    rs.getString("owner")
+            ));
+        }
+        return videos.toArray(new Video[0]);
     }
 }
