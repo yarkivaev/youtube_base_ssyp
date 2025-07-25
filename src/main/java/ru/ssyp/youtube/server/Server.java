@@ -210,6 +210,10 @@ public class Server {
                         int channelId = IntCodec.byteToInt(intByteBuffer);
                         command = new UnsubscribeChannelCommand(new Token(token),users, channels.channel(channelId));
                         command.act().readAllBytes();
+                    } else if (intCommand == 0x0e){
+                        String token = StringCodec.streamToString(inputStream);
+                        command = new GetUserChannelsCommand(users, channels, new Token(token));
+                        command.act().readAllBytes();
                     } else {
                         // защита от подлянок
                         throw new RuntimeException("invalid command received");
