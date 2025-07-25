@@ -51,6 +51,12 @@ public class SqliteDatabase implements PreparedDatabase {
                     PRIMARY KEY (channelId, videoId)
                 );
                 """);
+            statement.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS videoSegmentsAmount (
+                    videoId INTEGER PRIMARY KEY REFERENCES videos(id),
+                    segmentsAmount INTEGER NOT NULL
+                );
+                """);
             initialized = true;
         } catch (SQLException e) {
             throw new RuntimeException(e);

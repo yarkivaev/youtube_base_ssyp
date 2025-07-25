@@ -32,6 +32,11 @@ public class FakeStorage implements Storage{
     }
 
     @Override
+    public void remove(String name) {
+
+    }
+
+    @Override
     public InputStream download(String name) {
         return new ByteArrayInputStream(
                 name.getBytes()
