@@ -72,7 +72,7 @@ public class SqliteChannelTest {
     }
 
     @Test
-    void videosTest() throws SQLException, InvalidChannelIdException, IOException, InterruptedException {
+    void videosTest() throws InvalidChannelIdException, IOException, InterruptedException {
         MemoryVideoSegments videoSegments = new MemoryVideoSegments(db);
         Videos videos = new SqliteVideos(db, videoSegments);
         FileStorage fileStorage = new FileStorage();
@@ -94,5 +94,11 @@ public class SqliteChannelTest {
         for (Video video: videoList){
             System.out.println(video.metadata.title);
         }
+    }
+
+    @Test
+    void channelsTest() throws SQLException {
+        Channel[] c = channels.getUserChannel(session1.userId());
+        System.out.println(c[0].channelInfo().description());
     }
 }

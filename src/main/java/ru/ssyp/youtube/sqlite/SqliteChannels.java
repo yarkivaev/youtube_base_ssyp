@@ -2,10 +2,13 @@ package ru.ssyp.youtube.sqlite;
 
 import ru.ssyp.youtube.channel.*;
 import ru.ssyp.youtube.users.Session;
+import ru.ssyp.youtube.video.Video;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SqliteChannels implements Channels {
 
@@ -77,5 +80,25 @@ public class SqliteChannels implements Channels {
         catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Channel[] getUserChannel(int userId) {
+        try {
+            PreparedStatement selectStatement = db.conn().prepareStatement("SELECT id FROM channels WHERE owner = ?;");
+            selectStatement.setInt(1, userId);
+            ResultSet rs = selectStatement.executeQuery();
+            List<Channel> channels = new ArrayList<>();
+            int i = 1;
+            while (rs.next()){
+                int channelId = rs.getInt(i);
+                channels.add(channel(channelId));
+                i++;
+            }
+            return channels.toArray(new Channel[0]);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }
