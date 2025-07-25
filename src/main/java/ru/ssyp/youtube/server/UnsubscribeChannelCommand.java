@@ -36,7 +36,7 @@ public class UnsubscribeChannelCommand implements Command {
         try {
             channel.unsubscribe(session.userId());
             return null;
-        } catch (SQLException | InvalidUserIdException | NotSubscribedException e) {
+        } catch (InvalidUserIdException | NotSubscribedException e) {
             throw new RuntimeException(e);
         }
     }

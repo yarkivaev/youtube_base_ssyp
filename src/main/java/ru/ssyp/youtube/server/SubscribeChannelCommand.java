@@ -36,7 +36,7 @@ public class SubscribeChannelCommand implements Command {
         try {
             channel.subscribe(session.userId());
             return null;
-        } catch (SQLException | InvalidUserIdException | AlreadySubscribedException e) {
+        } catch (InvalidUserIdException | AlreadySubscribedException e) {
             throw new RuntimeException(e);
         }
     }

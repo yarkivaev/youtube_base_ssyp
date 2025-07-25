@@ -9,7 +9,7 @@ import java.sql.SQLException;
 public interface Videos {
     Video addNew(Session session, VideoMetadata metadata) throws InvalidChannelIdException;
 
-    Video video(int videoId) throws SQLException, InvalidVideoIdException;
+    Video video(int videoId) throws InvalidVideoIdException;
 
     void deleteVideo(int id, Session session) throws InvalidVideoIdException, ForeignChannelIdException;
 }

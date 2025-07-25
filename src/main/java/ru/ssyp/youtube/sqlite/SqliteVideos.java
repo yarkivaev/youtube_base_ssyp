@@ -82,16 +82,17 @@ public class SqliteVideos implements Videos {
     }
 
     @Override
-    public Video video(int videoId) throws SQLException, InvalidVideoIdException {
-        Connection dbConn = db.conn();
-        int segments = videoSegments.getSegmentsAmount(videoId);
-        //int segments = 0;
-        short segmentLength = 2;
-        var sql = """
-        SELECT owner, title, description, maxQuality FROM videos WHERE "videoId" = ?
-        """;
-
+    public Video video(int videoId) throws InvalidVideoIdException {
         try {
+            Connection dbConn = db.conn();
+            int segments = videoSegments.getSegmentsAmount(videoId);
+            //int segments = 0;
+            short segmentLength = 2;
+            var sql = """
+            SELECT owner, title, description, maxQuality FROM videos WHERE "videoId" = ?
+            """;
+
+
             var pstmt = dbConn.prepareStatement(sql);
             pstmt.setInt(1, videoId);
             var rs = pstmt.executeQuery();

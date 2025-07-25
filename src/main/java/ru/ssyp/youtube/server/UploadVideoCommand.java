@@ -32,7 +32,7 @@ public class UploadVideoCommand implements Command {
 
 
     @Override
-    public InputStream act() throws SQLException {
+    public InputStream act() {
         try {
             youtube.upload(this.session, this.metadata, this.file);
             return new NullInputStream();

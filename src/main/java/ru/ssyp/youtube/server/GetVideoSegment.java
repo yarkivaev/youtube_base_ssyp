@@ -30,7 +30,7 @@ public class GetVideoSegment implements Command {
     }
 
     @Override
-    public InputStream act() throws SQLException, InvalidVideoIdException, InvalidChannelIdException {
+    public InputStream act() throws InvalidVideoIdException, InvalidChannelIdException {
         return youtube.load(videoId, segmentId, quality.resolution);
     }
 }

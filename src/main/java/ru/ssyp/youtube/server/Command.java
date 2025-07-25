@@ -11,5 +11,5 @@ import java.sql.SQLException;
 
 public interface Command {
 
-    InputStream act() throws RuntimeException, SQLException, InvalidVideoIdException, InvalidChannelIdException;
+    InputStream act() throws RuntimeException   , InvalidVideoIdException, InvalidChannelIdException;
 }

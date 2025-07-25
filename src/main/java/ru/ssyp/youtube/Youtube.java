@@ -19,12 +19,12 @@ public interface Youtube {
 
     Video[] videos();
 
-    Video upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException, InvalidChannelIdException, SQLException;
+    Video upload(Session user, VideoMetadata metadata, InputStream stream) throws IOException, InterruptedException, InvalidChannelIdException;
 
-    void remove(int videoId, Session session) throws InvalidVideoIdException, SQLException, IOException, ForeignChannelIdException;
+    void remove(int videoId, Session session) throws InvalidVideoIdException, IOException, ForeignChannelIdException;
 
     /*
      * Отправляет поток данных видео, начиная с startSec секунды
      */
-    InputStream load(int videoId, int startSegment, int resolution) throws SQLException, InvalidVideoIdException, InvalidChannelIdException;
+    InputStream load(int videoId, int startSegment, int resolution) throws InvalidVideoIdException, InvalidChannelIdException;
 }
